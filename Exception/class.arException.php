@@ -20,7 +20,8 @@ class arException extends Exception {
 	const LIST_JOIN_ON_WRONG_FIELD = 1007;
 	const COPY_DESTINATION_ID_EXISTS = 1008;
 	const PRIVATE_CONTRUCTOR = 1009;
-	const NO_MAPPING = 10010;
+	const NO_MAPPING = 1010;
+	const FIELD_UNKNOWN = 1011;
 	/**
 	 * @var array
 	 */
@@ -35,6 +36,8 @@ class arException extends Exception {
 		self::COPY_DESTINATION_ID_EXISTS => 'Copy Record: A record with the Destination-ID already exists.',
 		self::PRIVATE_CONTRUCTOR => 'Constructor cannot be accessed.',
 		self::NO_MAPPING => 'No Mapping for Parent found. Please provide Method getParentMapping in your child-class',
+		self::FIELD_UNKNOWN => 'Field Unknown.',
+
 	);
 	/**
 	 * @var string
