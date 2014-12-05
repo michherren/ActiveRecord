@@ -6,7 +6,7 @@ require_once('class.arJoin.php');
  * Class arJoinCollection
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @version 2.0.6
+ * @version 2.1.0
  */
 class arJoinCollection extends arStatementCollection {
 

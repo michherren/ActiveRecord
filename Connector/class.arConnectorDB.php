@@ -7,7 +7,7 @@ require_once(dirname(__FILE__) . '/../Exception/class.arException.php');
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
  * @author  Timon Amstutz <timon.amstutz@ilub.unibe.ch>
- * @version 2.0.6
+ * @version 2.1.0
  */
 class arConnectorDB extends arConnector {
 
@@ -76,7 +76,7 @@ class arConnectorDB extends arConnector {
 		}
 		foreach ($arFieldList->getFields() as $i => $arField) {
 			if ($arField->getIndex() === 'true') {
-				if (! in_array($arField->getName(), $existing_indices)) {
+				if (!in_array($arField->getName(), $existing_indices)) {
 					$ilDB->addIndex($ar->getConnectorContainerName(), array( $arField->getName() ), 'i' . $i);
 				}
 			}
@@ -92,7 +92,7 @@ class arConnectorDB extends arConnector {
 	public function updateDatabase(ActiveRecord $ar) {
 		$ilDB = $this->returnDB();
 		foreach ($ar->getArFieldList()->getFields() as $field) {
-			if (! $ilDB->tableColumnExists($ar->getConnectorContainerName(), $field->getName())) {
+			if (!$ilDB->tableColumnExists($ar->getConnectorContainerName(), $field->getName())) {
 				$ilDB->addTableColumn($ar->getConnectorContainerName(), $field->getName(), $field->getAttributesForConnector());
 			}
 		}
@@ -193,7 +193,7 @@ class arConnectorDB extends arConnector {
 		if ($ilDB->tableColumnExists($ar->getConnectorContainerName(), $old_name)) {
 			//throw new arException($old_name, arException::COLUMN_DOES_NOT_EXIST);
 
-			if (! $ilDB->tableColumnExists($ar->getConnectorContainerName(), $new_name)) {
+			if (!$ilDB->tableColumnExists($ar->getConnectorContainerName(), $new_name)) {
 				//throw new arException($new_name, arException::COLUMN_DOES_ALREADY_EXIST);
 				$ilDB->renameTableColumn($ar->getConnectorContainerName(), $old_name, $new_name);
 			}
@@ -220,16 +220,13 @@ class arConnectorDB extends arConnector {
 	public function read(ActiveRecord $ar) {
 		$ilDB = $this->returnDB();
 
-		$query = 'SELECT * FROM ' . $ar->getConnectorContainerName() . ' ' . ' WHERE ' . arFieldCache::getPrimaryFieldName($ar)
-			. ' = ' . $ilDB->quote($ar->getPrimaryFieldValue(), arFieldCache::getPrimaryFieldType($ar));
+		$query = 'SELECT * FROM ' . $ar->getConnectorContainerName() . ' ' . ' WHERE ' . arFieldCache::getPrimaryFieldName($ar) . ' = '
+			. $ilDB->quote($ar->getPrimaryFieldValue(), arFieldCache::getPrimaryFieldType($ar));
 
 		$set = $ilDB->query($query);
-		$records = array();
-		while ($rec = $ilDB->fetchObject($set)) {
-			$records[] = $rec;
-		}
+		$rec = $ilDB->fetchObject($set);
 
-		return $records;
+		return $rec;
 	}
 
 
@@ -238,13 +235,33 @@ class arConnectorDB extends arConnector {
 	 */
 	public function update(ActiveRecord $ar) {
 		$ilDB = $this->returnDB();
-
-		$ilDB->update($ar->getConnectorContainerName(), $ar->getArrayForConnector(), array(
-			arFieldCache::getPrimaryFieldName($ar) => array(
-				arFieldCache::getPrimaryFieldType($ar),
-				$ar->getPrimaryFieldValue()
-			),
-		));
+//		if ($ar->getArFieldList()->getParentList()->hasParents()) {
+//			// TODO has to be done in ActiveRecord not in Connector
+//			$sql = 'UPDATE ' . $ar->getConnectorContainerName();
+//
+//			foreach ($ar->getArFieldList()->getParentList()->getParents() as $parent) {
+//				$sql .= ' JOIN ' . $parent->getParentTableName() . ' ON ';
+//				$sql .= $parent->getChildTableName() . '.' . $parent->getMappingFieldChild() . ' = ';
+//				$sql .= $parent->getParentTableName() . '.' . $parent->getMappingFieldParent();
+//			}
+//
+//			$sql .= ' SET ';
+//			$values = array();
+//			foreach ($ar->getArrayForConnector(true, true) as $key => $value) {
+//				$values[] = $key . ' = ' . $ilDB->quote($value[1], $value[0]);
+//			}
+//			$sql .= implode(', ', $values);
+//			$sql .= ' WHERE ' . arFieldCache::getPrimaryFieldName($ar) . ' = ';
+//			$sql .= $ilDB->quote($ar->getPrimaryFieldValue(), arFieldCache::getPrimaryFieldType($ar));
+//			$ilDB->query($sql);
+//		} else {
+			$ilDB->update($ar->getConnectorContainerName(), $ar->getArrayForConnector(), array(
+				arFieldCache::getPrimaryFieldName($ar) => array(
+					arFieldCache::getPrimaryFieldType($ar),
+					$ar->getPrimaryFieldValue()
+				),
+			));
+//		}
 	}
 
 

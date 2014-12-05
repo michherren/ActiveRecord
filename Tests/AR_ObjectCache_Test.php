@@ -1,18 +1,18 @@
 <?php
-
-
+require_once("./Tests/DataBase/class.arConnectorPdoDB.php");
 require_once("./Tests/Records/class.arUnitTestRecord.php");
-require_once("./Connector/class.arConnectorPdoDB.php");
+
 
 /**
- * Class ObjectCacheTest
+ * Class AR_ObjectCache_Test
  *
- * @description PHP Unit-Test for ILIAS ActiveRecord
+ * @description PHP Unit-Test for ILIAS ActiveRecord, ObjectCache
  *
  * @author      Fabian Schmid <fs@studer-raimann.ch>
- * @version 2.0.6
+ * @version     2.1.0
  */
-class ObjectCacheTest extends PHPUnit_Framework_TestCase {
+class AR_ObjectCache_Test extends PHPUnit_Framework_TestCase {
+
 	/**
 	 * @var pdoDB
 	 */
@@ -27,15 +27,22 @@ class ObjectCacheTest extends PHPUnit_Framework_TestCase {
 		PHPUnit_Framework_Error_Notice::$enabled = false;
 		arUnitTestRecord::installDB();
 		$arUnitTestRecord = new arUnitTestRecord();
-		//		$this->table_name = arUnitTestRecord::returnDbTableName();
 		$this->table_name = $arUnitTestRecord->getConnectorContainerName();
 		$this->pdo = arConnectorPdoDB::getConnector();
 	}
 
 
-	public function testTableExistant() {
-		$this->assertTrue($this->pdo->tableExists($this->table_name));
+
+
+
+	/**
+	 * @expectedException arException
+	 */
+	public function testFindOrFail() {
+		arUnitTestRecord::findOrFail(9999);
 	}
+
+
 
 	public static function tearDownAfterClass() {
 		$tableName = arUnitTestRecord::returnDbTableName();
@@ -43,11 +50,6 @@ class ObjectCacheTest extends PHPUnit_Framework_TestCase {
 		$pbo->manipulate("DROP TABLE {$tableName}");
 	}
 
-
-	public function chacheTestsOne() {
-		echo "!!!!!!!!!!";
-		echo "!!!!!!!!!!";
-	}
 }
 
 ?>

@@ -12,17 +12,17 @@ require_once('Cache/class.arCalledClassCache.php');
 /**
  * Class ActiveRecord
  *
- * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @author  Oskar Truffer <ot@studer-raimann.ch>
- * @experimental
- * @description
+ * @author      Fabian Schmid <fs@studer-raimann.ch>
+ * @author      Oskar Truffer <ot@studer-raimann.ch>
  *
- * @version 2.0.6
+ * @description An ActiveRecord ORM for ILIAS
+ *
+ * @version     2.1.0
  *
  */
 abstract class ActiveRecord implements arStorageInterface {
 
-	const ACTIVE_RECORD_VERSION = '2.0.6';
+	const ACTIVE_RECORD_VERSION = '2.1.0';
 	/**
 	 * @var arConnectorDB
 	 */
@@ -74,9 +74,9 @@ abstract class ActiveRecord implements arStorageInterface {
 		if ($this->connector_container_name) {
 			return $this->connector_container_name;
 		} else {
-			$ar = self::getCalledClass();
+			$class_name = get_called_class();
 
-			return $ar::returnDbTableName();
+			return $class_name::returnDbTableName();
 		}
 	}
 
@@ -239,11 +239,11 @@ abstract class ActiveRecord implements arStorageInterface {
 	 *
 	 * @return $this
 	 */
-	public function buildFromArray(array $array) {
+	public function buildFromArray(array $array, $force = false) {
 		$class = get_class($this);
 		$primary = $this->arFieldList->getPrimaryFieldName();
 		$primary_value = $array[$primary];
-		if ($primary_value AND arObjectCache::isCached($class, $primary_value)) {
+		if ($primary_value AND arObjectCache::isCached($class, $primary_value) AND !$force) {
 			return arObjectCache::get($class, $primary_value);
 		}
 		foreach ($array as $field_name => $value) {
@@ -266,6 +266,16 @@ abstract class ActiveRecord implements arStorageInterface {
 	 * @return mixed
 	 */
 	public function sleep($field_name) {
+		$field = $this->getArFieldList()->getFieldByName($field_name);
+		if ($field->autoConvertToDateTime() AND $this->{$field_name} instanceof DateTime) {
+			/**
+			 * @var $datetime DateTime
+			 */
+			$datetime = $this->{$field_name};
+
+			return $datetime->format(DATE_ISO8601);
+		}
+
 		return NULL;
 	}
 
@@ -277,30 +287,34 @@ abstract class ActiveRecord implements arStorageInterface {
 	 * @return mixed
 	 */
 	public function wakeUp($field_name, $field_value) {
+		$field = $this->getArFieldList()->getFieldByName($field_name);
+		if ($field->autoConvertToDateTime()) {
+			return new DateTime($field_value);
+		}
+
 		return NULL;
 	}
 
 
 	/**
 	 * @return array
-	 * @deprecated
 	 */
-	final public function getArrayForDb() {
-		return $this->getArrayForConnector();
-	}
-
-
-	/**
-	 * @return array
-	 */
-	final public function getArrayForConnector() {
+	final public function getArrayForConnector($only_own = true, $full = false) {
 		$data = array();
 		foreach ($this->arFieldList->getFields() as $field) {
+			if ($only_own AND $field->getBelongsTo() != $this->getConnectorContainerName()) {
+				continue;
+			}
 			$field_name = $field->getName();
-			if ($this->sleep($field_name) === NULL) {
-				$data[$field_name] = array( $field->getFieldType(), $this->{$field_name} );
+			if ($full) {
+				$field_name_full = $field->getBelongsTo() . '.' . $field->getName();
 			} else {
-				$data[$field_name] = array( $field->getFieldType(), $this->sleep($field_name) );
+				$field_name_full = $field_name;
+			}
+			if ($this->sleep($field_name) === NULL) {
+				$data[$field_name_full] = array( $field->getFieldType(), $this->{$field_name} );
+			} else {
+				$data[$field_name_full] = array( $field->getFieldType(), $this->sleep($field_name) );
 			}
 		}
 
@@ -324,6 +338,7 @@ abstract class ActiveRecord implements arStorageInterface {
 		$class = get_called_class();
 
 		return arCalledClassCache::get($class);
+//		return arFactory::getInstance($class);
 	}
 
 
@@ -383,13 +398,25 @@ abstract class ActiveRecord implements arStorageInterface {
 	 * @return bool
 	 */
 	final protected function installDatabase() {
-		if (! $this->tableExists()) {
+		if (!$this->tableExists()) {
 			$fields = array();
 			foreach ($this->arFieldList->getFields() as $field) {
-				$fields[$field->getName()] = $field->getAttributesForConnector();
+				if ($field->getBelongsTo() == $this->getConnectorContainerName()) {
+					$fields[$field->getName()] = $field->getAttributesForConnector();
+				}
 			}
 
-			return $this->arConnector->installDatabase($this, $fields);
+			$return = $this->arConnector->installDatabase($this, $fields);
+
+			$arParentList = $this->getArFieldList()->getParentList();
+			if ($arParentList->hasParents()) {
+				foreach ($arParentList->getParents() as $parent) {
+					$obj = $parent->getParent();
+					$obj->installDatabase();
+				}
+			}
+
+			return $return;
 		} else {
 			return $this->arConnector->updateDatabase($this);
 		}
@@ -400,13 +427,25 @@ abstract class ActiveRecord implements arStorageInterface {
 	 * @return bool
 	 */
 	final public static function updateDB() {
-		if (! self::tableExists()) {
+		if (!self::tableExists()) {
 			self::getCalledClass()->installDatabase();
 
 			return true;
 		}
 
 		return self::getCalledClass()->arConnector->updateDatabase(self::getCalledClass());
+	}
+
+
+	/**
+	 * @return bool
+	 */
+	final protected function updateDatabase() {
+		if ($this->tableExists()) {
+			return $this->arConnector->updateDatabase($this);
+		} else {
+			return $this->installDatabase();
+		}
 	}
 
 
@@ -437,7 +476,7 @@ abstract class ActiveRecord implements arStorageInterface {
 	// CRUD
 	//
 	public function store() {
-		if (! $this->getId()) {
+		if (!$this->getPrimaryFieldValue()) {
 			$this->create();
 		} else {
 			$this->update();
@@ -451,11 +490,12 @@ abstract class ActiveRecord implements arStorageInterface {
 
 
 	public function create() {
-		if ($this->getArFieldList()->getPrimaryField()->getSequence()) {
-			$this->id = $this->arConnector->nextID($this);
+		$arField = $this->getArFieldList()->getPrimaryField();
+		if ($arField->getSequence()) {
+			$this->{$arField->getName()} = $this->arConnector->nextID($this);
 		}
 
-		$this->arConnector->create($this, $this->getArrayForConnector());
+		$this->arConnector->create($this, $this->getArrayForConnector(true));
 		arObjectCache::store($this);
 	}
 
@@ -482,28 +522,64 @@ abstract class ActiveRecord implements arStorageInterface {
 
 
 	public function read() {
-		$records = $this->arConnector->read($this);
-		if (count($records) == 0 AND $this->ar_safe_read == true) {
+		$rec = $this->arConnector->read($this);
+
+		if (!$rec AND $this->ar_safe_read == true) {
 			throw new arException(arException::RECORD_NOT_FOUND, $this->getPrimaryFieldValue());
-		} elseif (count($records) == 0 AND $this->ar_safe_read == false) {
+		} elseif (!$rec AND $this->ar_safe_read == false) {
 			$this->is_new = true;
 		}
-		foreach ($records as $rec) {
-			foreach ($this->getArrayForConnector() as $k => $v) {
-				if ($this->wakeUp($k, $rec->{$k}) === NULL) {
-					$this->{$k} = $rec->{$k};
-				} else {
-					$this->{$k} = $this->wakeUp($k, $rec->{$k});
+
+		$this->mapFields($rec);
+
+		if ($this->getArFieldList()->getParentList()->hasParents()) {
+			foreach ($this->getArFieldList()->getParentList()->getParents() as $parent) {
+				if (!$parent->hasMapping()) {
+					throw new arException(arException::NO_MAPPING);
 				}
+
+				$parent_obj = arFactory::getInstance(get_class($parent->getParent()), $rec->{$parent->getMappingFieldParent()});
+				$this->mapFields($parent_obj->__asStdClass(), $parent_obj->getArrayForConnector());
 			}
-			arObjectCache::store($this);
-			$this->afterObjectLoad();
+		}
+
+		arObjectCache::store($this);
+		$this->afterObjectLoad();
+	}
+
+
+	/**
+	 * @param $rec
+	 */
+	protected function mapFields($rec, $mapping = NULL) {
+		if(!$rec) {
+			return;
+		}
+		if (!$mapping) {
+			$mapping = $this->getArrayForConnector();
+		}
+
+		foreach ($mapping as $k => $v) {
+			if ($this->wakeUp($k, $rec->{$k}) === NULL) {
+				$this->{$k} = $rec->{$k};
+			} else {
+				$this->{$k} = $this->wakeUp($k, $rec->{$k});
+			}
 		}
 	}
 
 
 	public function update() {
 		$this->arConnector->update($this);
+		$arParentList = $this->getArFieldList()->getParentList();
+		if ($arParentList->hasParents()) {
+			foreach ($arParentList->getParents() as $arParent) {
+				$class_name = get_class($arParent->getParent());
+				$obj = arFactory::getInstance($class_name);
+				$obj->buildFromArray($this->__asArray(), true);
+				$obj->update();
+			}
+		}
 		arObjectCache::store($this);
 	}
 
@@ -551,7 +627,7 @@ abstract class ActiveRecord implements arStorageInterface {
 		 */
 		try {
 			$class_name = get_called_class();
-			if (! arObjectCache::isCached($class_name, $primary_key)) {
+			if (!arObjectCache::isCached($class_name, $primary_key)) {
 				$obj = arFactory::getInstance($class_name, $primary_key, $add_constructor_args);
 				$obj->storeObjectToCache();
 
@@ -592,6 +668,23 @@ abstract class ActiveRecord implements arStorageInterface {
 
 			return $obj;
 		}
+	}
+
+
+	/**
+	 * @param       $primary_key
+	 * @param array $add_constructor_args
+	 *
+	 * @return ActiveRecord
+	 * @throws arException
+	 */
+	public static function findOrFail($primary_key, array $add_constructor_args = array()) {
+		$ar = self::find($primary_key, $add_constructor_args);
+		if (!$ar) {
+			throw new arException(arException::RECORD_NOT_FOUND, $primary_key);
+		}
+
+		return $ar;
 	}
 
 

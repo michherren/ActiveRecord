@@ -3,7 +3,7 @@
 /**
  * Class arCalledClassCache
  *
- * @version 2.0.6
+ * @version 2.1.0
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
  */

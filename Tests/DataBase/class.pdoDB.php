@@ -6,6 +6,9 @@ class pdoDB {
 	 * @var PDO
 	 */
 	protected $pdo;
+	/**
+	 * @var
+	 */
 	protected static $staticPbo;
 	/**
 	 * @var array
@@ -17,6 +20,7 @@ class pdoDB {
 		'date' => 'DATE',
 		'time' => 'TIME',
 		'datetime' => 'TIMESTAMP',
+		'timestamp' => 'DATETIME',
 		'clob' => 'LONGTEXT',
 
 	);
@@ -25,7 +29,6 @@ class pdoDB {
 	public function __construct() {
 		$this->pdo = new PDO('mysql:host=localhost;dbname=test_db;charset=utf8', 'travis', '');
 		$this->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
-		$attr = PDO::MYSQL_ATTR_USE_BUFFERED_QUERY;
 	}
 
 
@@ -34,19 +37,17 @@ class pdoDB {
 	 *
 	 * @return int
 	 */
-	public function nextId($table_name) {
-		if ($this->tableExists($table_name . '_seq')) {
-			$table_seq = $table_name . '_seq';
-			$stmt = $this->pdo->prepare("SELECT * FROM $table_seq");
-			$stmt->execute();
-			$rows = $stmt->fetch(PDO::FETCH_ASSOC);
-			$stmt->closeCursor();
-
-			return count($rows) ? 0 : $rows['seq'];
-		} else {
-			//            return $this->pdo->lastInsertId($table_name) + 1;
-			return 0;
+	public function nextId($table_name, $sequence_field) {
+		if ($this->tableExists($table_name)) {
+			$result = $this->pdo->query("SELECT MAX(" . $sequence_field . ") next_id FROM " . $table_name);
+			$record = $this->fetchObject($result);
+			var_dump($record->next_id); // FSX
+			if ($record->next_id) {
+				return $record->next_id;
+			}
 		}
+
+		return 0;
 	}
 
 
@@ -58,7 +59,7 @@ class pdoDB {
 	 */
 	public function createTable($table_name, $fields) {
 		$fields_query = $this->createTableFields($fields);
-		$query = "CREATE TABLE $table_name ($fields_query);";
+		$query = "CREATE TABLE {$table_name} ($fields_query);";
 		$this->pdo->exec($query);
 	}
 
@@ -72,14 +73,16 @@ class pdoDB {
 		$query = "";
 		foreach ($fields as $name => $field) {
 			$type = $this->type_to_mysql_type[$field['type']];
-			$length = $field['length'];
-			$primary = isset($field['is_primary']) && $field['is_primary'] ? "PRIMARY KEY" : "";
-			$notnull = isset($field['is_notnull']) && $field['is_notnull'] ? "NOT NULL" : "";
-			$sequence = isset($field['sequence']) && $field['sequence'] ? "AUTO_INCREMENT" : "";
-			$query .= "$name $type ($length) $sequence $primary $notnull,";
+			$length = isset($field['length']) ? ' (' . $field['length'] . ')' : '';
+			$primary = isset($field['is_primary']) AND $field['is_primary'] ? " PRIMARY KEY" : "";
+			$notnull = isset($field['is_notnull']) AND $field['is_notnull'] ? " NOT NULL" : "";
+			$sequence = isset($field['sequence']) AND $field['sequence'] ? " AUTO_INCREMENT" : "";
+			$query .= $name . ' ' . $type . $length . $sequence . $primary . $notnull . ",";
 		}
 
-		return substr($query, 0, - 1);
+		$substr = substr($query, 0, - 1);
+
+		return $substr;
 	}
 
 
@@ -126,7 +129,7 @@ class pdoDB {
 		$statement = $this->pdo->query("SHOW COLUMNS FROM $table_name WHERE Field = '$column_name'");
 		$statement != NULL ? $statement->closeCursor() : "";
 
-		return $statement != NULL && $statement->rowCount() != 0;
+		return $statement != NULL AND $statement->rowCount() != 0;
 	}
 
 

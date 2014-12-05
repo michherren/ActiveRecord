@@ -4,7 +4,7 @@ include_once('./Customizing/global/plugins/Libraries/ActiveRecord/Fields/class.a
  * GUI-Class arViewField
  *
  * @author  Timon Amstutz <timon.amstutz@ilub.unibe.ch>
- * @version 2.0.6
+ * @version 2.1.0
  *
  */
 class arViewField extends arField

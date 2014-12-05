@@ -7,7 +7,7 @@ require_once('./Customizing/global/plugins/Libraries/ActiveRecord/Storage/class.
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
  *
- * @version 2.0.6
+ * @version 2.1.0
  */
 class arStorageRecordStorage extends arStorage {
 

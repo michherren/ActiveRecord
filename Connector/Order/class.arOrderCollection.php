@@ -6,7 +6,7 @@ require_once('class.arOrder.php');
  * Class arOrderCollection
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @version 2.0.6
+ * @version 2.1.0
  */
 class arOrderCollection extends arStatementCollection {
 
@@ -19,7 +19,8 @@ class arOrderCollection extends arStatementCollection {
 			$return .= ' ORDER BY ';
 			foreach ($this->getOrders() as $order) {
 				$return .= $order->asSQLStatement($this->getAr());
-				if ($order != end($this->getOrders())) {
+				$orders = $this->getOrders();
+				if ($order != end($orders)) {
 					$return .= ', ';
 				}
 			}

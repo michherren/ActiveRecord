@@ -1,12 +1,13 @@
 <?php
 require_once('class.arField.php');
+require_once('Parent/class.arParentList.php');
 
 /**
  * Class arFieldList
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
  *
- * @version 2.0.6
+ * @version 2.1.0
  */
 class arFieldList {
 
@@ -18,6 +19,8 @@ class arFieldList {
 	const LENGTH = 'length';
 	const SEQUENCE = 'sequence';
 	const INDEX = 'index';
+	const BELONGS_TO = 'belongs_to';
+	const DECLARED_AS = 'declared_as';
 	/**
 	 * @var array
 	 */
@@ -37,6 +40,8 @@ class arFieldList {
 		self::LENGTH,
 		self::SEQUENCE,
 		self::INDEX,
+		self::BELONGS_TO,
+		self::DECLARED_AS,
 	);
 	/**
 	 * @var array
@@ -62,6 +67,10 @@ class arFieldList {
 	 * @var array
 	 */
 	protected $fields = array();
+	/**
+	 * @var arParentList
+	 */
+	protected $parent_list;
 	/**
 	 * @var array
 	 */
@@ -108,6 +117,7 @@ class arFieldList {
 	 */
 	public static function getInstance(ActiveRecord $ar) {
 		$arFieldList = new self();
+		$arFieldList->parent_list = arParentList::getInstance($ar);
 		$arFieldList->initRawFields($ar);
 		$arFieldList->initFields();
 
@@ -123,6 +133,7 @@ class arFieldList {
 	 */
 	public static function getInstanceFromStorage($ar) {
 		$arFieldList = new self();
+		$arFieldList->parent_list = arParentList::getInstance($ar);
 		$arFieldList->initRawFields($ar);
 		$arFieldList->initFields();
 
@@ -140,6 +151,48 @@ class arFieldList {
 		}
 
 		return $return;
+	}
+
+
+	/**
+	 * @param \ActiveRecord|\arStorageInterface $ar
+	 *
+	 * @return array
+	 */
+	protected function initRawFields(ActiveRecord $ar) {
+		$regex = "/[ ]*\\* @(" . implode('|', self::$prefixes) . ")_([a-zA-Z0-9_]*)[ ]*([a-zA-Z0-9_]*)/u";
+		$reflectionClass = new ReflectionClass($ar);
+		$raw_fields = array();
+		foreach ($reflectionClass->getProperties() as $property) {
+			if (in_array($property->getName(), self::$protected_names)) {
+				continue;
+			}
+
+			$properties_array = array();
+			$declaring_class = $property->getDeclaringClass()->name;
+			if ($declaring_class == get_class($ar)) {
+				$properties_array[self::BELONGS_TO] = $ar->getConnectorContainerName();
+			} else {
+				$arParent = $this->parent_list->getParentByClassName($declaring_class);
+				if ($arParent instanceof arParent) {
+					$properties_array[self::BELONGS_TO] = $arParent->getParentTableName();
+				}
+			}
+
+			$has_property = false;
+			foreach (explode("\n", $property->getDocComment()) as $line) {
+				if (preg_match($regex, $line, $matches)) {
+					$has_property = true;
+					$properties_array[(string)$matches[2]] = $matches[3];
+				}
+			}
+
+			if ($has_property) {
+				$raw_fields[$property->getName()] = $properties_array;
+			}
+		}
+
+		$this->setRawFields($raw_fields);
 	}
 
 
@@ -207,36 +260,6 @@ class arFieldList {
 
 
 	/**
-	 * @param \ActiveRecord|\arStorageInterface $ar
-	 *
-	 * @return array
-	 */
-	protected function initRawFields(arStorageInterface $ar) {
-		$regex = "/[ ]*\\* @(" . implode('|', self::$prefixes) . ")_([a-zA-Z0-9_]*)[ ]*([a-zA-Z0-9_]*)/u";
-		$reflectionClass = new ReflectionClass($ar);
-		$raw_fields = array();
-		foreach ($reflectionClass->getProperties() as $property) {
-			if (in_array($property->getName(), self::$protected_names)) {
-				continue;
-			}
-			$properties_array = array();
-			$has_property = false;
-			foreach (explode("\n", $property->getDocComment()) as $line) {
-				if (preg_match($regex, $line, $matches)) {
-					$has_property = true;
-					$properties_array[(string)$matches[2]] = $matches[3];
-				}
-			}
-			if ($has_property) {
-				$raw_fields[$property->getName()] = $properties_array;
-			}
-		}
-
-		$this->setRawFields($raw_fields);
-	}
-
-
-	/**
 	 * @param $attribute_name
 	 *
 	 * @return bool
@@ -254,7 +277,7 @@ class arFieldList {
 	protected static function checkAttributes(array $attributes) {
 		if ($attributes[self::HAS_FIELD] === 'true') {
 			foreach (array_keys($attributes) as $atr) {
-				if (! self::isAllowedAttribute($atr)) {
+				if (!self::isAllowedAttribute($atr)) {
 					return false;
 				}
 			}
@@ -327,6 +350,22 @@ class arFieldList {
 	 */
 	public function getPrimaryFields() {
 		return $this->primary_fields;
+	}
+
+
+	/**
+	 * @return arParentList
+	 */
+	public function getParentList() {
+		return $this->parent_list;
+	}
+
+
+	/**
+	 * @param arParentList $parent_list
+	 */
+	public function setParentList($parent_list) {
+		$this->parent_list = $parent_list;
 	}
 }
 

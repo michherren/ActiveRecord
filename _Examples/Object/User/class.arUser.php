@@ -1,16 +1,25 @@
 <?php
-require_once('./Customizing/global/plugins/Libraries/ActiveRecord/class.ActiveRecord.php');
+require_once(dirname(__FILE__) . '/../class.arObject.php');
 
 /**
  * Class arUser
  *
- * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @version 2.0.6
+ * @author            Fabian Schmid <fs@studer-raimann.ch>
+ * @version           2.1.0
+ *
+ * @ar_mapping_child  usr_id
+ * @ar_mapping_parent obj_id
  */
-class arUser extends ActiveRecord {
+class arUser extends arObject {
+
+	public function __construct($primary_key = 0) {
+		parent::__construct($primary_key, new arConnectorPdoDB());
+	}
+
 
 	/**
 	 * @return string
+	 * @deprecated
 	 */
 	static function returnDbTableName() {
 		return 'usr_data';
@@ -18,7 +27,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @var int
+	 * @return string
+	 */
+	public function getConnectorContainerName() {
+		return 'usr_data';
+	}
+
+
+	/**
+	 * @var
 	 *
 	 * @con_has_field  true
 	 * @con_fieldtype  integer
@@ -26,10 +43,11 @@ class arUser extends ActiveRecord {
 	 * @con_is_notnull true
 	 * @con_is_primary true
 	 * @con_is_unique  true
+	 * @con_sequence   true
 	 */
 	protected $usr_id;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -37,15 +55,15 @@ class arUser extends ActiveRecord {
 	 */
 	protected $login;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
-	 * @con_length    32
+	 * @con_length    80
 	 */
 	protected $passwd;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -53,7 +71,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $firstname;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -61,7 +79,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $lastname;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -69,7 +87,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $title;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -77,7 +95,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $gender;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -85,7 +103,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $email;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -93,7 +111,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $institution;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -101,7 +119,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $street;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -109,7 +127,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $city;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -117,7 +135,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $zipcode;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -125,7 +143,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $country;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -133,31 +151,28 @@ class arUser extends ActiveRecord {
 	 */
 	protected $phone_office;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
-	 * @con_fieldtype
-	 * @con_length
+	 * @con_fieldtype timestamp
 	 */
 	protected $last_login;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
-	 * @con_fieldtype
-	 * @con_length
+	 * @con_fieldtype timestamp
 	 */
 	protected $last_update;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
-	 * @con_fieldtype
-	 * @con_length
+	 * @con_fieldtype timestamp
 	 */
 	protected $create_date;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -165,7 +180,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $hobby;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -173,7 +188,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $department;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -181,7 +196,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $phone_home;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -189,7 +204,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $phone_mobile;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -197,15 +212,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $fax;
 	/**
-	 * @var int
-	 *
-	 * @con_has_field true
-	 * @con_fieldtype text
-	 * @con_length    32
-	 */
-	protected $i2passwd;
-	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype integer
@@ -213,7 +220,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $time_limit_owner;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype integer
@@ -221,7 +228,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $time_limit_unlimited;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype integer
@@ -229,7 +236,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $time_limit_from;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype integer
@@ -237,7 +244,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $time_limit_until;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype integer
@@ -245,7 +252,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $time_limit_message;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -253,7 +260,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $referral_comment;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -261,7 +268,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $matriculation;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field  true
 	 * @con_fieldtype  integer
@@ -270,23 +277,21 @@ class arUser extends ActiveRecord {
 	 */
 	protected $active;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
-	 * @con_fieldtype
-	 * @con_length
+	 * @con_fieldtype timestamp
 	 */
 	protected $approve_date;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
-	 * @con_fieldtype
-	 * @con_length
+	 * @con_fieldtype timestamp
 	 */
 	protected $agree_date;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype integer
@@ -294,7 +299,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $ilinc_id;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -302,7 +307,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $ilinc_login;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -310,7 +315,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $ilinc_passwd;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -318,7 +323,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $client_ip;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -326,7 +331,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $auth_mode;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype integer
@@ -334,7 +339,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $profile_incomplete;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -342,7 +347,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $ext_account;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -350,7 +355,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $im_icq;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -358,7 +363,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $im_yahoo;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -366,7 +371,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $im_msn;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -374,7 +379,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $im_aim;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -382,7 +387,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $im_skype;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -390,7 +395,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $feed_hash;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -398,7 +403,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $delicious;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -406,7 +411,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $latitude;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -414,7 +419,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $longitude;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field  true
 	 * @con_fieldtype  integer
@@ -423,7 +428,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $loc_zoom;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field  true
 	 * @con_fieldtype  integer
@@ -432,7 +437,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $login_attempts;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field  true
 	 * @con_fieldtype  integer
@@ -441,7 +446,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $last_password_change;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -449,7 +454,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $im_jabber;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -457,7 +462,7 @@ class arUser extends ActiveRecord {
 	 */
 	protected $im_voip;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -465,15 +470,14 @@ class arUser extends ActiveRecord {
 	 */
 	protected $reg_hash;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
-	 * @con_fieldtype
-	 * @con_length
+	 * @con_fieldtype timestamp
 	 */
 	protected $birthday;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
 	 * @con_fieldtype text
@@ -481,23 +485,21 @@ class arUser extends ActiveRecord {
 	 */
 	protected $sel_country;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
-	 * @con_fieldtype
-	 * @con_length
+	 * @con_fieldtype timestamp
 	 */
 	protected $last_visited;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field true
-	 * @con_fieldtype
-	 * @con_length
+	 * @con_fieldtype timestamp
 	 */
 	protected $inactivation_date;
 	/**
-	 * @var int
+	 * @var
 	 *
 	 * @con_has_field  true
 	 * @con_fieldtype  integer
@@ -505,18 +507,26 @@ class arUser extends ActiveRecord {
 	 * @con_is_notnull true
 	 */
 	protected $is_self_registered;
-
-
 	/**
-	 * @param int $active
+	 * @var
+	 *
+	 * @con_has_field true
+	 * @con_fieldtype text
+	 * @con_length    10
 	 */
-	public function setActive($active) {
-		$this->active = $active;
-	}
+	protected $passwd_enc_type;
+	/**
+	 * @var
+	 *
+	 * @con_has_field true
+	 * @con_fieldtype text
+	 * @con_length    32
+	 */
+	protected $passwd_salt;
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getActive() {
 		return $this->active;
@@ -524,15 +534,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $agree_date
+	 * @param mixed $active
 	 */
-	public function setAgreeDate($agree_date) {
-		$this->agree_date = $agree_date;
+	public function setActive($active) {
+		$this->active = $active;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getAgreeDate() {
 		return $this->agree_date;
@@ -540,15 +550,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $approve_date
+	 * @param mixed $agree_date
 	 */
-	public function setApproveDate($approve_date) {
-		$this->approve_date = $approve_date;
+	public function setAgreeDate($agree_date) {
+		$this->agree_date = $agree_date;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getApproveDate() {
 		return $this->approve_date;
@@ -556,15 +566,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $auth_mode
+	 * @param mixed $approve_date
 	 */
-	public function setAuthMode($auth_mode) {
-		$this->auth_mode = $auth_mode;
+	public function setApproveDate($approve_date) {
+		$this->approve_date = $approve_date;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getAuthMode() {
 		return $this->auth_mode;
@@ -572,15 +582,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $birthday
+	 * @param mixed $auth_mode
 	 */
-	public function setBirthday($birthday) {
-		$this->birthday = $birthday;
+	public function setAuthMode($auth_mode) {
+		$this->auth_mode = $auth_mode;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getBirthday() {
 		return $this->birthday;
@@ -588,15 +598,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $city
+	 * @param mixed $birthday
 	 */
-	public function setCity($city) {
-		$this->city = $city;
+	public function setBirthday($birthday) {
+		$this->birthday = $birthday;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getCity() {
 		return $this->city;
@@ -604,15 +614,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $client_ip
+	 * @param mixed $city
 	 */
-	public function setClientIp($client_ip) {
-		$this->client_ip = $client_ip;
+	public function setCity($city) {
+		$this->city = $city;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getClientIp() {
 		return $this->client_ip;
@@ -620,15 +630,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $country
+	 * @param mixed $client_ip
 	 */
-	public function setCountry($country) {
-		$this->country = $country;
+	public function setClientIp($client_ip) {
+		$this->client_ip = $client_ip;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getCountry() {
 		return $this->country;
@@ -636,15 +646,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $create_date
+	 * @param mixed $country
 	 */
-	public function setCreateDate($create_date) {
-		$this->create_date = $create_date;
+	public function setCountry($country) {
+		$this->country = $country;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getCreateDate() {
 		return $this->create_date;
@@ -652,15 +662,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $delicious
+	 * @param mixed $create_date
 	 */
-	public function setDelicious($delicious) {
-		$this->delicious = $delicious;
+	public function setCreateDate($create_date) {
+		$this->create_date = $create_date;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getDelicious() {
 		return $this->delicious;
@@ -668,15 +678,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $department
+	 * @param mixed $delicious
 	 */
-	public function setDepartment($department) {
-		$this->department = $department;
+	public function setDelicious($delicious) {
+		$this->delicious = $delicious;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getDepartment() {
 		return $this->department;
@@ -684,15 +694,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $email
+	 * @param mixed $department
 	 */
-	public function setEmail($email) {
-		$this->email = $email;
+	public function setDepartment($department) {
+		$this->department = $department;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getEmail() {
 		return $this->email;
@@ -700,15 +710,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $ext_account
+	 * @param mixed $email
 	 */
-	public function setExtAccount($ext_account) {
-		$this->ext_account = $ext_account;
+	public function setEmail($email) {
+		$this->email = $email;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getExtAccount() {
 		return $this->ext_account;
@@ -716,15 +726,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $fax
+	 * @param mixed $ext_account
 	 */
-	public function setFax($fax) {
-		$this->fax = $fax;
+	public function setExtAccount($ext_account) {
+		$this->ext_account = $ext_account;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getFax() {
 		return $this->fax;
@@ -732,15 +742,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $feed_hash
+	 * @param mixed $fax
 	 */
-	public function setFeedHash($feed_hash) {
-		$this->feed_hash = $feed_hash;
+	public function setFax($fax) {
+		$this->fax = $fax;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getFeedHash() {
 		return $this->feed_hash;
@@ -748,15 +758,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $firstname
+	 * @param mixed $feed_hash
 	 */
-	public function setFirstname($firstname) {
-		$this->firstname = $firstname;
+	public function setFeedHash($feed_hash) {
+		$this->feed_hash = $feed_hash;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getFirstname() {
 		return $this->firstname;
@@ -764,15 +774,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $gender
+	 * @param mixed $firstname
 	 */
-	public function setGender($gender) {
-		$this->gender = $gender;
+	public function setFirstname($firstname) {
+		$this->firstname = $firstname;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getGender() {
 		return $this->gender;
@@ -780,15 +790,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $hobby
+	 * @param mixed $gender
 	 */
-	public function setHobby($hobby) {
-		$this->hobby = $hobby;
+	public function setGender($gender) {
+		$this->gender = $gender;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getHobby() {
 		return $this->hobby;
@@ -796,31 +806,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $i2passwd
+	 * @param mixed $hobby
 	 */
-	public function setI2passwd($i2passwd) {
-		$this->i2passwd = $i2passwd;
+	public function setHobby($hobby) {
+		$this->hobby = $hobby;
 	}
 
 
 	/**
-	 * @return int
-	 */
-	public function getI2passwd() {
-		return $this->i2passwd;
-	}
-
-
-	/**
-	 * @param int $ilinc_id
-	 */
-	public function setIlincId($ilinc_id) {
-		$this->ilinc_id = $ilinc_id;
-	}
-
-
-	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getIlincId() {
 		return $this->ilinc_id;
@@ -828,15 +822,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $ilinc_login
+	 * @param mixed $ilinc_id
 	 */
-	public function setIlincLogin($ilinc_login) {
-		$this->ilinc_login = $ilinc_login;
+	public function setIlincId($ilinc_id) {
+		$this->ilinc_id = $ilinc_id;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getIlincLogin() {
 		return $this->ilinc_login;
@@ -844,15 +838,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $ilinc_passwd
+	 * @param mixed $ilinc_login
 	 */
-	public function setIlincPasswd($ilinc_passwd) {
-		$this->ilinc_passwd = $ilinc_passwd;
+	public function setIlincLogin($ilinc_login) {
+		$this->ilinc_login = $ilinc_login;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getIlincPasswd() {
 		return $this->ilinc_passwd;
@@ -860,15 +854,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $im_aim
+	 * @param mixed $ilinc_passwd
 	 */
-	public function setImAim($im_aim) {
-		$this->im_aim = $im_aim;
+	public function setIlincPasswd($ilinc_passwd) {
+		$this->ilinc_passwd = $ilinc_passwd;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getImAim() {
 		return $this->im_aim;
@@ -876,15 +870,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $im_icq
+	 * @param mixed $im_aim
 	 */
-	public function setImIcq($im_icq) {
-		$this->im_icq = $im_icq;
+	public function setImAim($im_aim) {
+		$this->im_aim = $im_aim;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getImIcq() {
 		return $this->im_icq;
@@ -892,15 +886,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $im_jabber
+	 * @param mixed $im_icq
 	 */
-	public function setImJabber($im_jabber) {
-		$this->im_jabber = $im_jabber;
+	public function setImIcq($im_icq) {
+		$this->im_icq = $im_icq;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getImJabber() {
 		return $this->im_jabber;
@@ -908,15 +902,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $im_msn
+	 * @param mixed $im_jabber
 	 */
-	public function setImMsn($im_msn) {
-		$this->im_msn = $im_msn;
+	public function setImJabber($im_jabber) {
+		$this->im_jabber = $im_jabber;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getImMsn() {
 		return $this->im_msn;
@@ -924,15 +918,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $im_skype
+	 * @param mixed $im_msn
 	 */
-	public function setImSkype($im_skype) {
-		$this->im_skype = $im_skype;
+	public function setImMsn($im_msn) {
+		$this->im_msn = $im_msn;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getImSkype() {
 		return $this->im_skype;
@@ -940,15 +934,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $im_voip
+	 * @param mixed $im_skype
 	 */
-	public function setImVoip($im_voip) {
-		$this->im_voip = $im_voip;
+	public function setImSkype($im_skype) {
+		$this->im_skype = $im_skype;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getImVoip() {
 		return $this->im_voip;
@@ -956,15 +950,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $im_yahoo
+	 * @param mixed $im_voip
 	 */
-	public function setImYahoo($im_yahoo) {
-		$this->im_yahoo = $im_yahoo;
+	public function setImVoip($im_voip) {
+		$this->im_voip = $im_voip;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getImYahoo() {
 		return $this->im_yahoo;
@@ -972,15 +966,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $inactivation_date
+	 * @param mixed $im_yahoo
 	 */
-	public function setInactivationDate($inactivation_date) {
-		$this->inactivation_date = $inactivation_date;
+	public function setImYahoo($im_yahoo) {
+		$this->im_yahoo = $im_yahoo;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getInactivationDate() {
 		return $this->inactivation_date;
@@ -988,15 +982,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $institution
+	 * @param mixed $inactivation_date
 	 */
-	public function setInstitution($institution) {
-		$this->institution = $institution;
+	public function setInactivationDate($inactivation_date) {
+		$this->inactivation_date = $inactivation_date;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getInstitution() {
 		return $this->institution;
@@ -1004,15 +998,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $is_self_registered
+	 * @param mixed $institution
 	 */
-	public function setIsSelfRegistered($is_self_registered) {
-		$this->is_self_registered = $is_self_registered;
+	public function setInstitution($institution) {
+		$this->institution = $institution;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getIsSelfRegistered() {
 		return $this->is_self_registered;
@@ -1020,15 +1014,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $last_login
+	 * @param mixed $is_self_registered
 	 */
-	public function setLastLogin($last_login) {
-		$this->last_login = $last_login;
+	public function setIsSelfRegistered($is_self_registered) {
+		$this->is_self_registered = $is_self_registered;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLastLogin() {
 		return $this->last_login;
@@ -1036,15 +1030,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $last_password_change
+	 * @param mixed $last_login
 	 */
-	public function setLastPasswordChange($last_password_change) {
-		$this->last_password_change = $last_password_change;
+	public function setLastLogin($last_login) {
+		$this->last_login = $last_login;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLastPasswordChange() {
 		return $this->last_password_change;
@@ -1052,15 +1046,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $last_update
+	 * @param mixed $last_password_change
 	 */
-	public function setLastUpdate($last_update) {
-		$this->last_update = $last_update;
+	public function setLastPasswordChange($last_password_change) {
+		$this->last_password_change = $last_password_change;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLastUpdate() {
 		return $this->last_update;
@@ -1068,15 +1062,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $last_visited
+	 * @param mixed $last_update
 	 */
-	public function setLastVisited($last_visited) {
-		$this->last_visited = $last_visited;
+	public function setLastUpdate($last_update) {
+		$this->last_update = $last_update;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLastVisited() {
 		return $this->last_visited;
@@ -1084,15 +1078,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $lastname
+	 * @param mixed $last_visited
 	 */
-	public function setLastname($lastname) {
-		$this->lastname = $lastname;
+	public function setLastVisited($last_visited) {
+		$this->last_visited = $last_visited;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLastname() {
 		return $this->lastname;
@@ -1100,15 +1094,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $latitude
+	 * @param mixed $lastname
 	 */
-	public function setLatitude($latitude) {
-		$this->latitude = $latitude;
+	public function setLastname($lastname) {
+		$this->lastname = $lastname;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLatitude() {
 		return $this->latitude;
@@ -1116,15 +1110,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $loc_zoom
+	 * @param mixed $latitude
 	 */
-	public function setLocZoom($loc_zoom) {
-		$this->loc_zoom = $loc_zoom;
+	public function setLatitude($latitude) {
+		$this->latitude = $latitude;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLocZoom() {
 		return $this->loc_zoom;
@@ -1132,15 +1126,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $login
+	 * @param mixed $loc_zoom
 	 */
-	public function setLogin($login) {
-		$this->login = $login;
+	public function setLocZoom($loc_zoom) {
+		$this->loc_zoom = $loc_zoom;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLogin() {
 		return $this->login;
@@ -1148,15 +1142,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $login_attempts
+	 * @param mixed $login
 	 */
-	public function setLoginAttempts($login_attempts) {
-		$this->login_attempts = $login_attempts;
+	public function setLogin($login) {
+		$this->login = $login;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLoginAttempts() {
 		return $this->login_attempts;
@@ -1164,15 +1158,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $longitude
+	 * @param mixed $login_attempts
 	 */
-	public function setLongitude($longitude) {
-		$this->longitude = $longitude;
+	public function setLoginAttempts($login_attempts) {
+		$this->login_attempts = $login_attempts;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getLongitude() {
 		return $this->longitude;
@@ -1180,15 +1174,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $matriculation
+	 * @param mixed $longitude
 	 */
-	public function setMatriculation($matriculation) {
-		$this->matriculation = $matriculation;
+	public function setLongitude($longitude) {
+		$this->longitude = $longitude;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getMatriculation() {
 		return $this->matriculation;
@@ -1196,15 +1190,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $passwd
+	 * @param mixed $matriculation
 	 */
-	public function setPasswd($passwd) {
-		$this->passwd = $passwd;
+	public function setMatriculation($matriculation) {
+		$this->matriculation = $matriculation;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getPasswd() {
 		return $this->passwd;
@@ -1212,15 +1206,47 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $phone_home
+	 * @param mixed $passwd
 	 */
-	public function setPhoneHome($phone_home) {
-		$this->phone_home = $phone_home;
+	public function setPasswd($passwd) {
+		$this->passwd = $passwd;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
+	 */
+	public function getPasswdEncType() {
+		return $this->passwd_enc_type;
+	}
+
+
+	/**
+	 * @param mixed $passwd_enc_type
+	 */
+	public function setPasswdEncType($passwd_enc_type) {
+		$this->passwd_enc_type = $passwd_enc_type;
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getPasswdSalt() {
+		return $this->passwd_salt;
+	}
+
+
+	/**
+	 * @param mixed $passwd_salt
+	 */
+	public function setPasswdSalt($passwd_salt) {
+		$this->passwd_salt = $passwd_salt;
+	}
+
+
+	/**
+	 * @return mixed
 	 */
 	public function getPhoneHome() {
 		return $this->phone_home;
@@ -1228,15 +1254,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $phone_mobile
+	 * @param mixed $phone_home
 	 */
-	public function setPhoneMobile($phone_mobile) {
-		$this->phone_mobile = $phone_mobile;
+	public function setPhoneHome($phone_home) {
+		$this->phone_home = $phone_home;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getPhoneMobile() {
 		return $this->phone_mobile;
@@ -1244,15 +1270,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $phone_office
+	 * @param mixed $phone_mobile
 	 */
-	public function setPhoneOffice($phone_office) {
-		$this->phone_office = $phone_office;
+	public function setPhoneMobile($phone_mobile) {
+		$this->phone_mobile = $phone_mobile;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getPhoneOffice() {
 		return $this->phone_office;
@@ -1260,15 +1286,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $profile_incomplete
+	 * @param mixed $phone_office
 	 */
-	public function setProfileIncomplete($profile_incomplete) {
-		$this->profile_incomplete = $profile_incomplete;
+	public function setPhoneOffice($phone_office) {
+		$this->phone_office = $phone_office;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getProfileIncomplete() {
 		return $this->profile_incomplete;
@@ -1276,15 +1302,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $referral_comment
+	 * @param mixed $profile_incomplete
 	 */
-	public function setReferralComment($referral_comment) {
-		$this->referral_comment = $referral_comment;
+	public function setProfileIncomplete($profile_incomplete) {
+		$this->profile_incomplete = $profile_incomplete;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getReferralComment() {
 		return $this->referral_comment;
@@ -1292,15 +1318,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $reg_hash
+	 * @param mixed $referral_comment
 	 */
-	public function setRegHash($reg_hash) {
-		$this->reg_hash = $reg_hash;
+	public function setReferralComment($referral_comment) {
+		$this->referral_comment = $referral_comment;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getRegHash() {
 		return $this->reg_hash;
@@ -1308,15 +1334,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $sel_country
+	 * @param mixed $reg_hash
 	 */
-	public function setSelCountry($sel_country) {
-		$this->sel_country = $sel_country;
+	public function setRegHash($reg_hash) {
+		$this->reg_hash = $reg_hash;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getSelCountry() {
 		return $this->sel_country;
@@ -1324,15 +1350,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $street
+	 * @param mixed $sel_country
 	 */
-	public function setStreet($street) {
-		$this->street = $street;
+	public function setSelCountry($sel_country) {
+		$this->sel_country = $sel_country;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getStreet() {
 		return $this->street;
@@ -1340,15 +1366,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $time_limit_from
+	 * @param mixed $street
 	 */
-	public function setTimeLimitFrom($time_limit_from) {
-		$this->time_limit_from = $time_limit_from;
+	public function setStreet($street) {
+		$this->street = $street;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getTimeLimitFrom() {
 		return $this->time_limit_from;
@@ -1356,15 +1382,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $time_limit_message
+	 * @param mixed $time_limit_from
 	 */
-	public function setTimeLimitMessage($time_limit_message) {
-		$this->time_limit_message = $time_limit_message;
+	public function setTimeLimitFrom($time_limit_from) {
+		$this->time_limit_from = $time_limit_from;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getTimeLimitMessage() {
 		return $this->time_limit_message;
@@ -1372,15 +1398,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $time_limit_owner
+	 * @param mixed $time_limit_message
 	 */
-	public function setTimeLimitOwner($time_limit_owner) {
-		$this->time_limit_owner = $time_limit_owner;
+	public function setTimeLimitMessage($time_limit_message) {
+		$this->time_limit_message = $time_limit_message;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getTimeLimitOwner() {
 		return $this->time_limit_owner;
@@ -1388,15 +1414,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $time_limit_unlimited
+	 * @param mixed $time_limit_owner
 	 */
-	public function setTimeLimitUnlimited($time_limit_unlimited) {
-		$this->time_limit_unlimited = $time_limit_unlimited;
+	public function setTimeLimitOwner($time_limit_owner) {
+		$this->time_limit_owner = $time_limit_owner;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getTimeLimitUnlimited() {
 		return $this->time_limit_unlimited;
@@ -1404,15 +1430,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $time_limit_until
+	 * @param mixed $time_limit_unlimited
 	 */
-	public function setTimeLimitUntil($time_limit_until) {
-		$this->time_limit_until = $time_limit_until;
+	public function setTimeLimitUnlimited($time_limit_unlimited) {
+		$this->time_limit_unlimited = $time_limit_unlimited;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getTimeLimitUntil() {
 		return $this->time_limit_until;
@@ -1420,15 +1446,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $title
+	 * @param mixed $time_limit_until
 	 */
-	public function setTitle($title) {
-		$this->title = $title;
+	public function setTimeLimitUntil($time_limit_until) {
+		$this->time_limit_until = $time_limit_until;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getTitle() {
 		return $this->title;
@@ -1436,15 +1462,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $usr_id
+	 * @param mixed $title
 	 */
-	public function setUsrId($usr_id) {
-		$this->usr_id = $usr_id;
+	public function setTitle($title) {
+		$this->title = $title;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getUsrId() {
 		return $this->usr_id;
@@ -1452,15 +1478,15 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $zipcode
+	 * @param mixed $usr_id
 	 */
-	public function setZipcode($zipcode) {
-		$this->zipcode = $zipcode;
+	public function setUsrId($usr_id) {
+		$this->usr_id = $usr_id;
 	}
 
 
 	/**
-	 * @return int
+	 * @return mixed
 	 */
 	public function getZipcode() {
 		return $this->zipcode;
@@ -1468,10 +1494,106 @@ class arUser extends ActiveRecord {
 
 
 	/**
-	 * @param int $key
+	 * @param mixed $zipcode
 	 */
-	public function setKey($key) {
-		$this->key = $key;
+	public function setZipcode($zipcode) {
+		$this->zipcode = $zipcode;
+	}
+
+
+	/**
+	 * @return boolean
+	 */
+	public function isArSafeRead() {
+		return $this->ar_safe_read;
+	}
+
+
+	/**
+	 * @param boolean $ar_safe_read
+	 */
+	public function setArSafeRead($ar_safe_read) {
+		$this->ar_safe_read = $ar_safe_read;
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getDescription() {
+		return $this->description;
+	}
+
+
+	/**
+	 * @param mixed $description
+	 */
+	public function setDescription($description) {
+		$this->description = $description;
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getImportId() {
+		return $this->import_id;
+	}
+
+
+	/**
+	 * @param mixed $import_id
+	 */
+	public function setImportId($import_id) {
+		$this->import_id = $import_id;
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getObjId() {
+		return $this->obj_id;
+	}
+
+
+	/**
+	 * @param mixed $obj_id
+	 */
+	public function setObjId($obj_id) {
+		$this->obj_id = $obj_id;
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getOwner() {
+		return $this->owner;
+	}
+
+
+	/**
+	 * @param mixed $owner
+	 */
+	public function setOwner($owner) {
+		$this->owner = $owner;
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getType() {
+		return $this->type;
+	}
+
+
+	/**
+	 * @param mixed $type
+	 */
+	public function setType($type) {
+		$this->type = $type;
 	}
 
 
@@ -1480,6 +1602,14 @@ class arUser extends ActiveRecord {
 	 */
 	public function getKey() {
 		return $this->key;
+	}
+
+
+	/**
+	 * @param int $key
+	 */
+	public function setKey($key) {
+		$this->key = $key;
 	}
 }
 

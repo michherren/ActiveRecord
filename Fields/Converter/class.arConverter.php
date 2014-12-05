@@ -5,7 +5,7 @@ require_once(dirname(__FILE__) . '/../class.arFieldList.php');
  * Class arConverter
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @version 2.0.6
+ * @version 2.1.0
  *
  *
  * @description         $arConverter = new arConverter('my_msql_table_name', 'arMyRecordClass');
@@ -27,6 +27,7 @@ class arConverter {
 		'smallint' => arField::FIELD_TYPE_INTEGER,
 		'mediumint' => arField::FIELD_TYPE_INTEGER,
 		'bigint' => arField::FIELD_TYPE_INTEGER,
+		'timestamp' => arField::FIELD_TYPE_DATE,
 	);
 	/**
 	 * @var array
@@ -91,7 +92,7 @@ require_once('./Services/ActiveRecord/class.ActiveRecord.php');
  * Class {CLASS_NAME}
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @version 2.0.6
+ * @version 2.1.0
  */
 class {CLASS_NAME} extends ActiveRecord {
 

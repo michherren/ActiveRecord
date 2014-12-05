@@ -5,7 +5,7 @@
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
  *
- * @version 2.0.6
+ * @version 2.1.0
  */
 class arField {
 
@@ -87,7 +87,7 @@ class arField {
 	public function getAttributesForConnector() {
 		$return = array();
 		foreach (arFieldList::getAllowedConnectorFields() as $field_name) {
-			if (isset($this->{$field_name}) && $this->{$field_name} AND self::isAllowedAttribute($this->getFieldType(), $field_name)) {
+			if (isset($this->{$field_name}) AND $this->{$field_name} AND self::isAllowedAttribute($this->getFieldType(), $field_name)) {
 				$return[arFieldList::mapKey($field_name)] = $this->{$field_name};
 			}
 		}
@@ -116,6 +116,14 @@ class arField {
 	 */
 	public function isDateField() {
 		return self::isDateFieldType($this->getFieldType());
+	}
+
+
+	/**
+	 * @return bool
+	 */
+	public function autoConvertToDateTime() {
+		return $this->getFieldType() == self::FIELD_TYPE_TIMESTAMP AND $this->getDeclaredAs() == 'DateTime';
 	}
 
 
@@ -155,6 +163,14 @@ class arField {
 	 * @var bool
 	 */
 	protected $index = false;
+	/**
+	 * @var string
+	 */
+	protected $belongs_to = '';
+	/**
+	 * @var string
+	 */
+	protected $declared_as = '';
 
 
 	/**
@@ -302,6 +318,22 @@ class arField {
 
 
 	/**
+	 * @return string
+	 */
+	public function getBelongsTo() {
+		return $this->belongs_to;
+	}
+
+
+	/**
+	 * @param string $belongs_to_table
+	 */
+	public function setBelongsTo($belongs_to_table) {
+		$this->belongs_to = $belongs_to_table;
+	}
+
+
+	/**
 	 * @param $type
 	 * @param $field_name
 	 *
@@ -323,6 +355,22 @@ class arField {
 	 */
 	public static function isDateFieldType($field_type) {
 		return in_array($field_type, self::$date_fields);
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getDeclaredAs() {
+		return $this->declared_as;
+	}
+
+
+	/**
+	 * @param string $declared_as
+	 */
+	public function setDeclaredAs($declared_as) {
+		$this->declared_as = $declared_as;
 	}
 }
 

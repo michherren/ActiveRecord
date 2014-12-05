@@ -6,7 +6,7 @@ require_once('class.arWhere.php');
  * Class arWhereCollection
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @version 2.0.6
+ * @version 2.1.0
  */
 class arWhereCollection extends arStatementCollection {
 

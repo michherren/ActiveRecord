@@ -12,7 +12,7 @@ require_once(dirname(__FILE__) . '/Connector/Order/class.arOrderCollection.php')
  *
  * @description
  *
- * @version 2.0.6
+ * @version 2.1.0
  */
 class ActiveRecordList {
 
@@ -93,6 +93,17 @@ class ActiveRecordList {
 		} else {
 			$this->connector = $ar->getArConnector();
 		}
+		if ($ar->getArFieldList()->getParentList()->hasParents()) {
+			foreach ($ar->getArFieldList()->getParentList()->getParents() as $parent) {
+				$join = new arJoin();
+				$join->setTableName($parent->getParentTableName());
+				$join->setInner(true);
+				$join->setOperator('=');
+				$join->setOnFirstField($parent->getMappingFieldChild());
+				$join->setOnSecondField($parent->getMappingFieldParent());
+				$this->arJoinCollection->add($join);
+			}
+		}
 	}
 
 	//
@@ -160,7 +171,7 @@ class ActiveRecordList {
 	 * @throws arException
 	 */
 	public function orderBy($order_by, $order_direction = 'ASC') {
-		if (! $this->getAR()->getArFieldList()->isField($order_by)) {
+		if (!$this->getAR()->getArFieldList()->isField($order_by)) {
 			//			throw new arException(arException::LIST_ORDER_BY_WRONG_FIELD, $order_by); // Due to Bugfix with Joins
 		}
 		$arOrder = new arOrder();
@@ -219,7 +230,7 @@ class ActiveRecordList {
 	 */
 
 	protected function join($type = arJoin::TYPE_INNER, $tablename, $on_this, $on_external, $fields = array( '*' ), $operator = '=', $both_external) {
-		if (! $this->getAR()->getArFieldList()->isField($on_this)) {
+		if (!$this->getAR()->getArFieldList()->isField($on_this)) {
 			throw new arException(arException::LIST_JOIN_ON_WRONG_FIELD, $on_this);
 		}
 		$full_names = false;
@@ -436,7 +447,9 @@ class ActiveRecordList {
 	public function first() {
 		$this->load();
 
-		return array_shift(array_values($this->result));
+		$array = array_values($this->result);
+
+		return array_shift($array);
 	}
 
 
@@ -466,6 +479,29 @@ class ActiveRecordList {
 
 
 	/**
+	 * @return array
+	 */
+	public function __asArray() {
+		return $this->getArray();
+	}
+
+
+	/**
+	 * @param string $seperator
+	 *
+	 * @return string
+	 */
+	public function __asCSV($values = NULL, $seperator = ';', $unmask = '"', $new_line = "\n") {
+		$lines = array();
+		foreach ($this->getArray(NULL, $values) as $set) {
+			$lines[] = implode($seperator, $set);
+		}
+
+		return implode($new_line, $lines);
+	}
+
+
+	/**
 	 * @param $key
 	 * @param $values
 	 *
@@ -479,7 +515,7 @@ class ActiveRecordList {
 		$array = array();
 		foreach ($this->result_array as $row) {
 			if ($key) {
-				if (! array_key_exists($key, $row)) {
+				if (!array_key_exists($key, $row)) {
 					throw new Exception("The attribute $key does not exist on this model.");
 				}
 				$array[$row[$key]] = $this->buildRow($row, $values);
@@ -503,7 +539,7 @@ class ActiveRecordList {
 			return $row;
 		} else {
 			$array = array();
-			if (! is_array($values)) {
+			if (!is_array($values)) {
 				return $row[$values];
 			}
 			foreach ($row as $key => $value) {
@@ -527,16 +563,16 @@ class ActiveRecordList {
 			 */
 			$class = get_class($this->getAR());
 			$obj = arFactory::getInstance($class, NULL, $this->getAddidtionalParameters());
-			$primaryFieldName = $obj->getArFieldList()->getPrimaryFieldName();
+			$primary_field_name = $obj->getArFieldList()->getPrimaryFieldName();
 
 			foreach ($records as $res) {
-				$primary_field_value = $res[$primaryFieldName];
-				if (! $this->getRaw()) {
+				$primary_field_value = $res[$primary_field_name];
+				if (!$this->getRaw()) {
 					$obj = arFactory::getInstance($class, NULL, $this->getAddidtionalParameters());
 					$this->result[$primary_field_value] = $obj->buildFromArray($res);
 				}
 				$res_awake = array();
-				if (! $this->getRaw()) {
+				if (!$this->getRaw()) {
 					foreach ($res as $key => $value) {
 						$arField = $obj->getArFieldList()->getFieldByName($key);
 						if ($arField !== NULL) {
@@ -552,7 +588,7 @@ class ActiveRecordList {
 							$res_awake[$key] = $value;
 						}
 					}
-					$this->result_array[$res_awake[$primaryFieldName]] = $res_awake;
+					$this->result_array[$res_awake[$primary_field_name]] = $res_awake;
 				} else {
 					$this->result_array[$primary_field_value] = $res;
 				}

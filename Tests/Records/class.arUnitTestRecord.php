@@ -1,12 +1,12 @@
 <?php
 require_once('./class.ActiveRecord.php');
-require_once('./Connector/class.arConnectorPdoDB.php');
+require_once('./Tests/DataBase/class.arConnectorPdoDB.php');
 
 /**
  * Class arUnitTestRecord
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @version 2.0.6
+ * @version 2.1.0
  */
 class arUnitTestRecord extends ActiveRecord {
 

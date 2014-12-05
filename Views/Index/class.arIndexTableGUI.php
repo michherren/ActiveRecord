@@ -7,7 +7,7 @@ require_once('./Customizing/global/plugins/Libraries/ActiveRecord/Views/Index/cl
  * GUI-Class arIndexTableGUI
  *
  * @author  Timon Amstutz <timon.amstutz@ilub.unibe.ch>
- * @version 2.0.6
+ * @version 2.1.0
  *
  */
 class arIndexTableGUI extends srModelObjectTableGUI
