@@ -26,8 +26,8 @@ class AR_MultiTable_Inheritance_Test extends PHPUnit_Framework_TestCase {
 
 
 	public function setUp() {
-		PHPUnit_Framework_Error_Notice::$enabled = true;
-		PHPUnit_Framework_Error_Warning::$enabled = true;
+		PHPUnit_Framework_Error_Notice::$enabled = false;
+		PHPUnit_Framework_Error_Warning::$enabled = false;
 		arTestUser::installDB();
 		$this->pdo = arConnectorPdoDB::getConnector();
 	}
@@ -67,7 +67,7 @@ class AR_MultiTable_Inheritance_Test extends PHPUnit_Framework_TestCase {
 	public static function tearDownAfterClass() {
 		$tableName = arTestUser::returnDbTableName();
 		$pbo = new pdoDB();
-		//$pbo->manipulate("DROP TABLE {$tableName}");
+		$pbo->manipulate("DROP TABLE {$tableName}");
 	}
 }
 
