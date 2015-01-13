@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '/../Exception/class.arException.php');
 /**
  * Class arObjectCache
  *
- * @version 2.1.0
+ * @version 2.0.7
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
  */
@@ -17,20 +17,20 @@ class arObjectCache {
 
 
 	/**
-	 * @param string $class_name
-	 * @param        $id
+	 * @param $class
+	 * @param $id
 	 *
 	 * @return bool
 	 */
-	public static function isCached($class_name, $id) {
-		if (!isset(self::$cache[$class_name])) {
+	public static function isCached($class, $id) {
+		if (!isset(self::$cache[$class])) {
 			return false;
 		}
-		if (!isset(self::$cache[$class_name][$id]) OR !self::$cache[$class_name][$id] instanceof ActiveRecord) {
+		if (!isset(self::$cache[$class][$id]) || !self::$cache[$class][$id] instanceof ActiveRecord) {
 			return false;
 		}
 
-		return in_array($id, array_keys(self::$cache[$class_name]));
+		return in_array($id, array_keys(self::$cache[$class]));
 	}
 
 
@@ -55,18 +55,18 @@ class arObjectCache {
 
 
 	/**
-	 * @param string $class_name
-	 * @param        $id
+	 * @param $class
+	 * @param $id
 	 *
 	 * @throws arException
 	 * @return ActiveRecord
 	 */
-	public static function get($class_name, $id) {
-		if (!self::isCached($class_name, $id)) {
-			throw new arException(arException::GET_UNCACHED_OBJECT, $class_name . ': ' . $id);
+	public static function get($class, $id) {
+		if (!self::isCached($class, $id)) {
+			throw new arException(arException::GET_UNCACHED_OBJECT, $class . ': ' . $id);
 		}
 
-		return self::$cache[$class_name][$id];
+		return self::$cache[$class][$id];
 	}
 
 

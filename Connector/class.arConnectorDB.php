@@ -7,7 +7,7 @@ require_once(dirname(__FILE__) . '/../Exception/class.arException.php');
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
  * @author  Timon Amstutz <timon.amstutz@ilub.unibe.ch>
- * @version 2.1.0
+ * @version 2.0.7
  */
 class arConnectorDB extends arConnector {
 
@@ -224,9 +224,12 @@ class arConnectorDB extends arConnector {
 			. $ilDB->quote($ar->getPrimaryFieldValue(), arFieldCache::getPrimaryFieldType($ar));
 
 		$set = $ilDB->query($query);
-		$rec = $ilDB->fetchObject($set);
+		$records = array();
+		while ($rec = $ilDB->fetchObject($set)) {
+			$records[] = $rec;
+		}
 
-		return $rec;
+		return $records;
 	}
 
 
@@ -235,33 +238,13 @@ class arConnectorDB extends arConnector {
 	 */
 	public function update(ActiveRecord $ar) {
 		$ilDB = $this->returnDB();
-//		if ($ar->getArFieldList()->getParentList()->hasParents()) {
-//			// TODO has to be done in ActiveRecord not in Connector
-//			$sql = 'UPDATE ' . $ar->getConnectorContainerName();
-//
-//			foreach ($ar->getArFieldList()->getParentList()->getParents() as $parent) {
-//				$sql .= ' JOIN ' . $parent->getParentTableName() . ' ON ';
-//				$sql .= $parent->getChildTableName() . '.' . $parent->getMappingFieldChild() . ' = ';
-//				$sql .= $parent->getParentTableName() . '.' . $parent->getMappingFieldParent();
-//			}
-//
-//			$sql .= ' SET ';
-//			$values = array();
-//			foreach ($ar->getArrayForConnector(true, true) as $key => $value) {
-//				$values[] = $key . ' = ' . $ilDB->quote($value[1], $value[0]);
-//			}
-//			$sql .= implode(', ', $values);
-//			$sql .= ' WHERE ' . arFieldCache::getPrimaryFieldName($ar) . ' = ';
-//			$sql .= $ilDB->quote($ar->getPrimaryFieldValue(), arFieldCache::getPrimaryFieldType($ar));
-//			$ilDB->query($sql);
-//		} else {
-			$ilDB->update($ar->getConnectorContainerName(), $ar->getArrayForConnector(), array(
-				arFieldCache::getPrimaryFieldName($ar) => array(
-					arFieldCache::getPrimaryFieldType($ar),
-					$ar->getPrimaryFieldValue()
-				),
-			));
-//		}
+
+		$ilDB->update($ar->getConnectorContainerName(), $ar->getArrayForConnector(), array(
+			arFieldCache::getPrimaryFieldName($ar) => array(
+				arFieldCache::getPrimaryFieldType($ar),
+				$ar->getPrimaryFieldValue()
+			),
+		));
 	}
 
 

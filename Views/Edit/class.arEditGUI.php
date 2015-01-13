@@ -1,11 +1,13 @@
 <?php
 require_once('./Services/Form/classes/class.ilPropertyFormGUI.php');
+require_once('./Customizing/global/plugins/Libraries/ActiveRecord/Views/Edit/class.arEditField.php');
+require_once('./Customizing/global/plugins/Libraries/ActiveRecord/Views/Edit/class.arEditFields.php');
 
 /**
  * GUI-Class arEditGUI
  *
  * @author            Timon Amstutz <timon.amstutz@ilub.unibe.ch>
- * @version 2.1.0
+ * @version           2.0.7
  *
  */
 class arEditGUI extends ilPropertyFormGUI {
@@ -27,128 +29,173 @@ class arEditGUI extends ilPropertyFormGUI {
 	 */
 	protected $form_name = "";
 	/**
-	 * @var array
+	 * @var string
 	 */
-	protected $fields_to_hide = array();
+	protected $form_prefix = "";
+	/**
+	 * @var arEditFields
+	 */
+	protected $fields;
 
 
-    /**
-     * @param arGUI $parent_gui
-     * @param ActiveRecord $ar
-     */
-    public function __construct(arGUI $parent_gui, ActiveRecord $ar) {
+	/**
+	 * @param arGUI        $parent_gui
+	 * @param ActiveRecord $ar
+	 */
+	public function __construct(arGUI $parent_gui, ActiveRecord $ar) {
 		global $ilCtrl;
 
 		$this->ar = $ar;
 		$this->parent_gui = $parent_gui;
 		$this->ctrl = $ilCtrl;
 		$this->ctrl->saveParameter($parent_gui, 'ar_id');
-		$this->initFieldsToHide();
+		$this->setFormName(get_class($ar));
+		$this->init();
+	}
+
+
+	/**
+	 ******************************************************************
+	 *********************** Form Initialization **********************
+	 ******************************************************************
+	 */
+	protected function init() {
+		$this->initFields();
 		$this->initForm();
-		if ($this->ar->getId() != 0) {
+		if ($this->ar->getPrimaryFieldValue() != 0) {
 			$this->fillForm();
 		}
 	}
 
 
-	/**
-	 * @param array $fields_to_hide
-	 */
-	public function setFieldsToHide($fields_to_hide) {
-		$this->fields_to_hide = $fields_to_hide;
+	protected function initFields() {
+		$this->fields = new arEditFields($this->ar);
+		$this->customizeFields();
+		$this->fields->sortFields();
 	}
 
 
-	/**
-	 * @return array
-	 */
-	public function getFieldsToHide() {
-		return $this->fields_to_hide;
-	}
-
-
-	protected function initFieldsToHide() {
+	protected function customizeFields() {
 	}
 
 
 	protected function initForm() {
-		$this->setInitFormAction();
-		$this->setFormName();
-		$this->generateFields();
-		$this->addCommandButtons();
+		$this->BeforeInitForm();
+		$this->initFormAction();
+		$this->initFormTitle();
+		$this->generateFormFields();
+		$this->initCommandButtons();
+		$this->afterInitForm();
 	}
 
 
-	protected function setInitFormAction() {
+	protected function beforeInitForm() {
+	}
+
+
+	protected function initFormAction() {
 		$this->setFormAction($this->ctrl->getFormAction($this->parent_gui, "index"));
 	}
 
 
-	protected function generateFields() {
-		foreach ($this->ar->getArFieldList()->getFields() as $field) {
-			if (! in_array($field->getName(), $this->getFieldsToHide())) {
-				$this->addField($field);
+	protected function initFormTitle() {
+		$this->setFormPrefix("");
+		if ($this->ar->getPrimaryFieldValue() == 0) {
+			$this->setTitle($this->txt($this->getFormPrefix() . 'create_' . $this->getFormName()));
+		} else {
+			$this->setTitle($this->txt($this->getFormPrefix() . 'edit_' . $this->getFormName()));
+		}
+	}
+
+
+	protected function generateFormFields() {
+
+		foreach ($this->fields->getFields() as $field) {
+			/**
+			 * @var arEditField $field
+			 */
+			if ($field->getVisible()) {
+				$this->addFormField($field);
 			}
 		}
 	}
 
 
-    /**
-     * @param arField $field
-     */
-    protected function addField(arField $field) {
+	/**
+	 * @param arEditField $field
+	 */
+	protected function addFormField(arEditField $field) {
 		$field_element = NULL;
-		switch ($field->getFieldType()) {
-			case 'integer':
-			case 'float':
-				$field_element = $this->addNumbericInputField($field);
-				break;
-			case 'text':
-				$field_element = $this->addTextInputField($field);
-				break;
-			case 'date':
-			case 'time':
-			case 'timestamp':
-				$field_element = $this->addDateTimeInputField($field);
-				break;
-			case 'clob':
-				$field_element = $this->addClobInputField($field);
-				break;
+		if (!$field->getFormElement()) {
+			switch ($field->getFieldType()) {
+				case 'integer':
+				case 'float':
+					$field->setFormElement($this->addNumbericInputField($field));
+					break;
+					break;
+				case 'date':
+				case 'time':
+				case 'timestamp':
+					$field->setFormElement($this->addDateTimeInputField($field));
+					break;
+				case 'clob':
+					$field->setFormElement($this->addClobInputField($field));
+					break;
+				default:
+					$field->setFormElement($this->addTextInputField($field));
+			}
+			if ($field->getNotNull()) {
+				$field->getFormElement()->setRequired(true);
+			}
 		}
-		if ($field->notnull) {
-			$field_element->setRequired(true);
-		}
-		$this->adaptAnyInput($field_element, $field);
-		if ($field_element) {
-			$this->addItem($field_element);
+
+		if ($field->getFormElement()) {
+			if ($field->getSubelementOf()) {
+				$field->getSubelementOf()->addSubItem($field->getFormElement());
+			} else {
+				$this->addItem($field->getFormElement());
+			}
 		}
 	}
 
 
-    /**
-     * @param arField $field
-     * @return ilTextInputGUI
-     */
-    protected function addTextInputField(arField $field) {
-		return new ilTextInputGUI($this->txt($field->getName()), $field->getName());;
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return ilTextInputGUI
+	 */
+	protected function addBooleanInputField(arEditField $field) {
+		return new ilCheckboxInputGUI($this->txt($field->getTxt()), $field->getName());
 	}
 
 
-    /**
-     * @param arField $field
-     * @return ilNumberInputGUI
-     */
-    protected function addNumbericInputField(arField $field) {
-		return new ilNumberInputGUI($this->txt($field->getName()), $field->getName());
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return ilTextInputGUI
+	 */
+	protected function addTextInputField(arEditField $field) {
+		return new ilTextInputGUI($this->txt($field->getTxt()), $field->getName());
 	}
 
 
-    /**
-     * @param arField $field
-     * @return ilDateTimeInputGUI
-     */
-    protected function addDateTimeInputField(arField $field) {
-		$date_input = new ilDateTimeInputGUI($this->txt($field->getName()), $field->getName());
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return ilNumberInputGUI
+	 */
+	protected function addNumbericInputField(arEditField $field) {
+		return new ilNumberInputGUI($this->txt($field->getTxt()), $field->getName());
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return ilDateTimeInputGUI
+	 */
+	protected function addDateTimeInputField(arEditField $field) {
+		$date_input = new ilDateTimeInputGUI($this->txt($field->getTxt()), $field->getName());
 		$date_input->setDate(new ilDate(date('Y-m-d H:i:s'), IL_CAL_DATE));
 		$date_input->setShowTime(true);
 
@@ -156,201 +203,18 @@ class arEditGUI extends ilPropertyFormGUI {
 	}
 
 
-    /**
-     * @param arField $field
-     * @return ilTextAreaInputGUI
-     */
-    protected function addClobInputField(arField $field) {
-		return new ilTextAreaInputGUI($this->txt($field->getName()), $field->getName());
-	}
-
-
-    /**
-     * @param $any_input
-     * @param arField $field
-     */
-    protected function adaptAnyInput(&$any_input, arField $field) {
-	}
-
-
-	protected function setFormName() {
-		if ($this->ar->getId() == 0) {
-			$this->setTitle($this->txt('create_' . $this->form_name));
-		} else {
-			$this->setTitle($this->txt('edit_' . $this->form_name));
-		}
-	}
-
-
-	public function fillForm() {
-		foreach ($this->ar->getArFieldList()->getFields() as $field) {
-			$form_item = $this->getItemByPostVar($field->getName());
-			if (! in_array($field->getName(), $this->getFieldsToHide())) {
-				$get_function = "get" . $this->ar->_toCamelCase($field->getName(), true);
-				switch ($field->getFieldType()) {
-					case 'integer':
-					case 'float':
-					case 'text':
-					case 'clob':
-						$form_item->setValue($this->ar->$get_function());
-						break;
-					case 'date':
-					case 'time':
-					case 'timestamp':
-						$datetime = new ilDateTime($this->ar->$get_function(), IL_CAL_DATETIME);
-						$form_item->setDate($datetime);
-						//$values[$field->getName()] =
-						break;
-				}
-			}
-		}
-	}
-
-
 	/**
-	 * returns whether checkinput was successful or not.
+	 * @param arEditField $field
 	 *
-	 * @return bool
+	 * @return ilTextAreaInputGUI
 	 */
-	public function setRecordFields() {
-		if (! $this->checkInput()) {
-			return false;
-		}
-
-		foreach ($this->ar->getArFieldList()->getFields() as $field) {
-			$valid = false;
-
-			if ($field->getName() == 'id') {
-				$valid = true;
-			} elseif ($field->getName() == 'created' && $this->ar->getId() == 0) {
-				$datetime = new ilDateTime(time(), IL_CAL_UNIX);
-				$this->ar->setCreated($datetime->get(IL_CAL_DATETIME));
-				$valid = true;
-			} elseif ($field->getName() == 'modified') {
-				$datetime = new ilDateTime(time(), IL_CAL_UNIX);
-				$this->ar->setModified($datetime->get(IL_CAL_DATETIME));
-				$valid = true;
-			} elseif (array_key_exists($field->getName(), $_POST)) {
-				$value = $_POST[$field->getName()];
-
-				$set_function = "set" . $this->ar->_toCamelCase($field->getName(), true);
-
-				switch ($field->getFieldType()) {
-					case 'integer':
-					case 'float':
-						$valid = $this->setNumbericRecordField($field, $set_function, $value);
-						break;
-					case 'text':
-						$valid = $this->setTextRecordField($field, $set_function, $value);
-						break;
-					case 'date':
-					case 'time':
-					case 'timestamp':
-						$valid = $this->setDateTimeRecordField($field, $set_function, $value);
-						break;
-					case 'clob':
-						$valid = $this->setClobRecordField($field, $set_function, $value);
-						break;
-				}
-			} else {
-				$valid = $this->handleEmptyPostValue($field);;
-			}
-
-			if (! $valid) {
-				return false;
-			}
-		}
-
-		return true;
+	protected function addClobInputField(arEditField $field) {
+		return new ilTextAreaInputGUI($this->txt($field->getTxt()), $field->getName());
 	}
 
 
-    /**
-     * @param arField $field
-     * @param $set_function
-     * @param $value
-     * @return bool
-     */
-    protected function setNumbericRecordField(arField $field, $set_function, $value) {
-		$this->ar->$set_function($value);
-
-		return true;
-	}
-
-    /**
-     * @param arField $field
-     * @param $set_function
-     * @param $value
-     * @return bool
-     */
-    protected function setTextRecordField(arField $field, $set_function, $value) {
-		$this->ar->$set_function($value);
-
-		return true;
-	}
-
-
-    /**
-     * @param arField $field
-     * @param $set_function
-     * @param $value
-     * @return bool
-     */
-    protected function setDateTimeRecordField(arField $field, $set_function, $value) {
-		if ($value['time']) {
-			$datetime = new ilDateTime($value['date'] . " " . $value['time'], IL_CAL_DATETIME);
-			$timestamp = $datetime->get(IL_CAL_DATETIME);
-		} else {
-			$datetime = new ilDateTime($value['date'], IL_CAL_DATETIME);
-			$timestamp = $datetime->get(IL_CAL_DATETIME);
-		}
-		$this->ar->$set_function($timestamp);
-
-		return true;
-	}
-
-
-    /**
-     * @param arField $field
-     * @param $set_function
-     * @param $value
-     * @return bool
-     */
-    protected function setClobRecordField(arField $field, $set_function, $value) {
-		$this->ar->$set_function($value);
-
-		return true;
-	}
-
-
-    /**
-     * @param arField $field
-     * @return bool
-     */
-    protected function handleEmptyPostValue(arField $field) {
-		return true;
-	}
-
-
-	/**
-	 * @return bool
-	 */
-	public function saveObject() {
-		if (! $this->setRecordFields()) {
-			return false;
-		}
-		if ($this->ar->getId()) {
-			$this->ar->update();
-		} else {
-			$this->ar->create();
-		}
-
-		return true;
-	}
-
-
-	protected function addCommandButtons() {
-		if ($this->ar->getId() == 0) {
+	protected function initCommandButtons() {
+		if ($this->ar->getPrimaryFieldValue() == 0) {
 			$this->addCommandButton('create', $this->txt('create', false));
 		} else {
 			$this->addCommandButton('update', $this->txt('save', false));
@@ -359,12 +223,357 @@ class arEditGUI extends ilPropertyFormGUI {
 	}
 
 
-    /**
-     * @param $txt
-     * @param bool $plugin_txt
-     * @return string
-     */
-    protected function txt($txt, $plugin_txt = true) {
+	protected function afterInitForm() {
+	}
+
+
+	/**
+	 ******************************************************************
+	 *********************** Fill Form  *******************************
+	 ******************************************************************
+	 */
+	public function fillForm() {
+		$this->beforeFillForm();
+		foreach ($this->fields->getFields() as $field) {
+			/**
+			 * @var arEditField $field
+			 */
+			if ($field->getVisible()) {
+				if ($field->getFormElement()) {
+					$this->fillFormField($field);
+				}
+			}
+		}
+		$this->afterFillForm();
+	}
+
+
+	protected function beforeFillForm() {
+	}
+
+
+	protected function afterFillForm() {
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 */
+	protected function fillFormField(arEditField $field) {
+		$get_function = $field->getGetFunctionName();
+		switch (get_class($field->getFormElement())) {
+			case 'ilCheckboxInputGUI':
+				$field->getFormElement()->setValue(1);
+				$field->getFormElement()->setChecked($this->ar->$get_function() == 1 ? true : false);
+				break;
+			case 'ilNumberInputGUI':
+			case 'ilSelectInputGUI':
+			case 'ilTextInputGUI':
+			case 'ilTextAreaInputGUI':
+			case 'ilRadioGroupInputGUI':
+				$field->getFormElement()->setValue($this->ar->$get_function());
+				break;
+			case 'ilDateTimeInputGUI':
+			case 'ilDate':
+				/**
+				 * @var ilDateTimeInputGUI $form_item
+				 */
+				$datetime = new ilDateTime($this->ar->$get_function(), IL_CAL_DATETIME);
+				$form_item->setDate($datetime);
+				break;
+			default:
+				$this->fillCustomFormField($field);
+				break;
+		}
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 */
+	protected function fillCustomFormField(arEditField $field) {
+	}
+
+
+
+	/**
+	 ******************************************************************
+	 *********************** After Submit  ****************************
+	 ******************************************************************
+	 */
+	/**
+	 * @return bool
+	 */
+	public function saveObject() {
+		if (!$this->beforeSave()) {
+			return false;
+		}
+		global $ilUser;
+		/**
+		 * @var ilObjUser $ilUser
+		 */
+		if (!$this->setArFieldsAfterSubmit()) {
+			return false;
+		}
+		$modified_by_field = $this->getFields()->getModifiedByField();
+		if ($modified_by_field) {
+			$set_modified_by_function = $modified_by_field->getSetFunctionName();
+			$this->ar->$set_modified_by_function($ilUser->getId());
+		}
+		$modification_date_field = $this->getFields()->getModificationDateField();
+		if ($modification_date_field) {
+			$set_modification_date_function = $modification_date_field->getSetFunctionName();
+			$datetime = new ilDateTime(time(), IL_CAL_UNIX);
+			$this->ar->$set_modification_date_function($datetime);
+		}
+		if ($this->ar->getPrimaryFieldValue() != 0) {
+			$this->ar->update();
+		} else {
+			$created_by_field = $this->getFields()->getCreatedByField();
+			if ($created_by_field) {
+				$set_created_by_function = $created_by_field->getSetFunctionName();
+				$this->ar->$set_created_by_function($ilUser->getId());
+			}
+			$creation_date_field = $this->getFields()->getCreationDateField();
+			if ($creation_date_field) {
+				$set_creation_date_function = $creation_date_field->getSetFunctionName();
+				$datetime = new ilDateTime(time(), IL_CAL_UNIX);
+				$this->ar->$set_creation_date_function($datetime);
+			}
+			$this->ar->create();
+		}
+
+		return $this->afterSave();
+	}
+
+
+	protected function beforeSave() {
+		return true;
+	}
+
+
+	/**
+	 * @return bool
+	 */
+	protected function afterSave() {
+		return true;
+	}
+
+
+	/**
+	 * @return bool
+	 */
+	public function setArFieldsAfterSubmit() {
+		if (!$this->checkInput()) {
+			return false;
+		}
+		if (!$this->afterValidation()) {
+			return false;
+		}
+
+		foreach ($this->fields->getFields() as $field) {
+			if (!$this->setArFieldAfterSubmit($field)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+
+	protected function afterValidation() {
+		return true;
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return bool
+	 */
+	protected function setArFieldAfterSubmit(arEditField $field) {
+		/**
+		 * @var arEditField $field
+		 */
+		$valid = false;
+
+		if ($field->getPrimary()) {
+			$valid = true;
+
+			return true;
+		}
+		if (array_key_exists($field->getName(), $_POST)) {
+			switch (get_class($field->getFormElement())) {
+				case 'ilNumberInputGUI':
+				case 'ilCheckboxInputGUI':
+				case 'ilSelectInputGUI':
+				case 'ilRadioGroupInputGUI':
+					return $this->setNumericRecordField($field);
+				case 'ilTextInputGUI':
+				case 'ilTextAreaInputGUI':
+					return $this->setTextRecordField($field);
+				case 'ilDateTimeInputGUI':
+				case 'ilDate':
+					return $this->setDateTimeRecordField($field);
+				default:
+					return $this->setCustomRecordField($field);
+			}
+		}
+
+		return $this->handleEmptyPostValue($field);;
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return bool
+	 */
+	protected function setNumericRecordField(arEditField $field) {
+		$set_function = $field->getSetFunctionName();
+		$this->ar->$set_function($this->getInput($field->getName()));
+
+		return true;
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return bool
+	 */
+	protected function setTextRecordField(arEditField $field) {
+		$set_function = $field->getSetFunctionName();
+		$this->ar->$set_function($this->getInput($field->getName()));
+
+		return true;
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return bool
+	 */
+	protected function setDateTimeRecordField(arEditField $field) {
+		$set_function = $field->getSetFunctionName();
+		$value = $this->getInput($field->getName());
+		if ($value['time']) {
+			$datetime = new ilDateTime($value['date'] . " " . $value['time'], IL_CAL_DATETIME);
+		} else {
+			$datetime = new ilDateTime($value['date'], IL_CAL_DATETIME);
+		}
+		$this->ar->$set_function($datetime);
+
+		return true;
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return bool
+	 */
+	protected function setCustomRecordField(arEditField $field) {
+		return true;
+	}
+
+
+	/**
+	 * @param arEditField $field
+	 *
+	 * @return bool
+	 */
+	protected function handleEmptyPostValue(arEditField $field) {
+		return true;
+	}
+
+	/**
+	 ******************************************************************
+	 *********************** Setters and Getters  *********************
+	 ******************************************************************
+	 */
+	/**
+	 * @param arEditFields $fields
+	 */
+	function setFields(arEditFields $fields) {
+		$this->fields = $fields;
+	}
+
+
+	/**
+	 * @return arEditFields
+	 */
+	public function getFields() {
+		return $this->fields;
+	}
+
+
+	/**
+	 * @return arEditField []
+	 */
+	public function getFieldsAsArray() {
+		return $this->getFields()->getFields();
+	}
+
+
+	/**
+	 * @param $field_name
+	 *
+	 * @return arEditField
+	 */
+	public function getField($field_name) {
+		return $this->getFields()->getField($field_name);
+	}
+
+
+	/**
+	 * @param arEditField
+	 */
+	public function addEditField(arEditField $field) {
+		$this->getFields()->addField($field);
+	}
+
+
+	/**
+	 * @param      $txt
+	 * @param bool $plugin_txt
+	 *
+	 * @return string
+	 */
+	protected function txt($txt, $plugin_txt = true) {
 		return $this->parent_gui->txt($txt, $plugin_txt);
+	}
+
+
+	/**
+	 * @param string $form_name
+	 */
+	public function setFormName($form_name) {
+		$this->form_name = $form_name;
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getFormName() {
+		return $this->form_name;
+	}
+
+
+	/**
+	 * @param string $form_prefix
+	 */
+	public function setFormPrefix($form_prefix) {
+		$this->form_prefix = $form_prefix;
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getFormPrefix() {
+		return $this->form_prefix;
 	}
 }

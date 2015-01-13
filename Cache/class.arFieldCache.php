@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '/../Fields/class.arFieldList.php');
 /**
  * Class arFieldCache
  *
- * @version 2.1.0
+ * @version 2.0.7
  *
  * @author  Fabian Schmid <fs@studer-raimann.ch>
  */
@@ -17,12 +17,12 @@ class arFieldCache {
 
 
 	/**
-	 * @param string $class_name
+	 * @param ActiveRecord $ar
 	 *
 	 * @return bool
 	 */
-	public static function isCached($class_name) {
-		return in_array($class_name, array_keys(self::$cache));
+	public static function isCached(ActiveRecord $ar) {
+		return in_array(get_class($ar), array_keys(self::$cache));
 	}
 
 
@@ -55,26 +55,11 @@ class arFieldCache {
 	 * @return arFieldList
 	 */
 	public static function get(ActiveRecord $ar) {
-		$class_name = get_class($ar);
-		if (!self::isCached($class_name)) {
+		if (!self::isCached($ar)) {
 			self::store($ar);
 		}
 
-		return self::$cache[$class_name];
-	}
-
-
-	/**
-	 * @param $class_name
-	 *
-	 * @return arFieldList
-	 */
-	public static function getByClassName($class_name) {
-		if (!self::isCached($class_name)) {
-			self::store(new $class_name);
-		}
-
-		return self::$cache[$class_name];
+		return self::$cache[get_class($ar)];
 	}
 
 
