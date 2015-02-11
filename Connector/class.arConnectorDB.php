@@ -220,8 +220,22 @@ class arConnectorDB extends arConnector {
 	public function read(ActiveRecord $ar) {
 		$ilDB = $this->returnDB();
 
-		$query = 'SELECT * FROM ' . $ar->getConnectorContainerName() . ' ' . ' WHERE ' . arFieldCache::getPrimaryFieldName($ar) . ' = '
-			. $ilDB->quote($ar->getPrimaryFieldValue(), arFieldCache::getPrimaryFieldType($ar));
+		if ($ar->getArFieldList()->hasCombinedPrimary()) {
+			$values = $ar->getPrimaryFieldValues();
+			$types = $ar->getArFieldList()->getPrimaryFieldTypes();
+			$query = 'SELECT * FROM ';
+			$query .= $ar->getConnectorContainerName();
+			$query .= ' WHERE ';
+			$wheres = array();
+			foreach ($values as $k => $v) {
+				$wheres[] = ' ' . $k . ' = ' . $ilDB->quote($v, $types[$k]);
+			}
+			$query .= implode(' AND ', $wheres);
+			var_dump($query); // FSX
+		} else {
+			$query = 'SELECT * FROM ' . $ar->getConnectorContainerName() . ' ' . ' WHERE ' . arFieldCache::getPrimaryFieldName($ar) . ' = '
+				. $ilDB->quote($ar->getPrimaryFieldValue(), arFieldCache::getPrimaryFieldType($ar));
+		}
 
 		$set = $ilDB->query($query);
 		$records = array();
@@ -296,14 +310,14 @@ class arConnectorDB extends arConnector {
 	/**
 	 * @param ActiveRecordList $arl
 	 *
-	 * @return mixed|string
+	 * @return string
 	 */
 	protected function buildQuery(ActiveRecordList $arl) {
 		// SELECTS
 		$q = $arl->getArSelectCollection()->asSQLStatement();
 		// Concats
 		$q .= $arl->getArConcatCollection()->asSQLStatement();
-		$q .= ' FROM '.$arl->getAR()->getConnectorContainerName();
+		$q .= ' FROM ' . $arl->getAR()->getConnectorContainerName();
 		// JOINS
 		$q .= $arl->getArJoinCollection()->asSQLStatement();
 		// WHERE

@@ -150,7 +150,7 @@ class arFieldList {
 				$arField->getHasField(true);
 				$arField->loadFromArray($fieldname, $attributes);
 				$this->fields[] = $arField;
-				if ($arField->getPrimary()) {
+				if ($arField->getPrimary() == 'true') {
 					$this->primary_fields[] = $arField;
 					$this->setPrimaryField($arField);
 				}
