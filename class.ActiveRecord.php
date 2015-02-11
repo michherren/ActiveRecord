@@ -100,12 +100,37 @@ abstract class ActiveRecord implements arStorageInterface {
 
 
 	/**
+	 * @return array
+	 */
+	public function getPrimaryFieldValues() {
+		$return = array();
+		foreach ($this->getArFieldList()->getPrimaryFields() as $field) {
+			$primary_fieldname = $field->getName();
+			$return[$primary_fieldname] = $this->{$primary_fieldname};
+		}
+
+		return $return;
+	}
+
+
+	/**
 	 * @param $value
 	 */
 	public function setPrimaryFieldValue($value) {
 		$primary_fieldname = arFieldCache::getPrimaryFieldName($this);
 
 		$this->{$primary_fieldname} = $value;
+	}
+
+
+	/**
+	 * @param array $values
+	 */
+	public function setPrimaryFieldValues(array $values) {
+		foreach ($this->getArFieldList()->getPrimaryFields() as $field) {
+			$primary_fieldname = $field->getName();
+			$this->{$primary_fieldname} = $values[$primary_fieldname];
+		}
 	}
 
 
@@ -122,8 +147,15 @@ abstract class ActiveRecord implements arStorageInterface {
 		$this->arFieldList = arFieldCache::get($this);
 		$key = $this->arFieldList->getPrimaryFieldName();
 		$this->{$key} = $primary_key;
+		if ($this->getArFieldList()->hasCombinedPrimary() AND is_array($primary_key)) {
+			$this->read();
+
+			return;
+		}
 		if ($primary_key !== 0 AND $primary_key !== NULL AND $primary_key !== false) {
 			$this->read();
+
+			return;
 		}
 	}
 
@@ -383,7 +415,7 @@ abstract class ActiveRecord implements arStorageInterface {
 	 * @return bool
 	 */
 	final protected function installDatabase() {
-		if (! $this->tableExists()) {
+		if (!$this->tableExists()) {
 			$fields = array();
 			foreach ($this->arFieldList->getFields() as $field) {
 				$fields[$field->getName()] = $field->getAttributesForConnector();
@@ -400,7 +432,7 @@ abstract class ActiveRecord implements arStorageInterface {
 	 * @return bool
 	 */
 	final public static function updateDB() {
-		if (! self::tableExists()) {
+		if (!self::tableExists()) {
 			self::getCalledClass()->installDatabase();
 
 			return true;
@@ -437,7 +469,7 @@ abstract class ActiveRecord implements arStorageInterface {
 	// CRUD
 	//
 	public function store() {
-		if (! $this->getId()) {
+		if (!$this->getId()) {
 			$this->create();
 		} else {
 			$this->update();
@@ -551,7 +583,7 @@ abstract class ActiveRecord implements arStorageInterface {
 		 */
 		try {
 			$class_name = get_called_class();
-			if (! arObjectCache::isCached($class_name, $primary_key)) {
+			if (!arObjectCache::isCached($class_name, $primary_key)) {
 				$obj = arFactory::getInstance($class_name, $primary_key, $add_constructor_args);
 				$obj->storeObjectToCache();
 

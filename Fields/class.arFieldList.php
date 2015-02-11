@@ -51,7 +51,7 @@ class arFieldList {
 	 */
 	protected $primary_field;
 	/**
-	 * @var array
+	 * @var arField[]
 	 */
 	protected $primary_fields = array();
 	/**
@@ -151,6 +151,7 @@ class arFieldList {
 				$arField->loadFromArray($fieldname, $attributes);
 				$this->fields[] = $arField;
 				if ($arField->getPrimary()) {
+					$this->primary_fields[] = $arField;
 					$this->setPrimaryField($arField);
 				}
 			}
@@ -191,6 +192,14 @@ class arFieldList {
 
 
 	/**
+	 * @return bool
+	 */
+	public function hasCombinedPrimary() {
+		return count($this->getPrimaryFields()) > 1;
+	}
+
+
+	/**
 	 * @return string
 	 */
 	public function getPrimaryFieldName() {
@@ -199,10 +208,38 @@ class arFieldList {
 
 
 	/**
-	 * @return mixed
+	 * @return array
+	 */
+	public function getPrimaryFieldNames() {
+		$names = array();
+
+		foreach ($this->getPrimaryFields() as $field) {
+			$names[] = $field->getName();
+		}
+
+		return $names;
+	}
+
+
+	/**
+	 * @return int
 	 */
 	public function getPrimaryFieldType() {
 		return $this->getPrimaryField()->getFieldType();
+	}
+
+
+	/**
+	 * @return array
+	 */
+	public function getPrimaryFieldTypes() {
+		$types = array();
+
+		foreach ($this->getPrimaryFields() as $field) {
+			$types[$field->getName()] = $field->getFieldType();
+		}
+
+		return $types;
 	}
 
 
@@ -315,7 +352,7 @@ class arFieldList {
 
 
 	/**
-	 * @param array $primary_fields
+	 * @param arField[] $primary_fields
 	 */
 	public function setPrimaryFields($primary_fields) {
 		$this->primary_fields = $primary_fields;
@@ -323,7 +360,7 @@ class arFieldList {
 
 
 	/**
-	 * @return array
+	 * @return arField[]
 	 */
 	public function getPrimaryFields() {
 		return $this->primary_fields;
